@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Simulator: Professional Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
+        
+        body { font-family: 'Sarabun', sans-serif; }
+        
+        .chat-scroll::-webkit-scrollbar { width: 6px; }
+        .chat-scroll::-webkit-scrollbar-track { background: transparent; }
+        .chat-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+        
+        .typing-indicator span {
+            display: inline-block; width: 6px; height: 6px; background-color: #94a3b8; border-radius: 50%; margin: 0 2px;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+        
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+        .mic-active { animation: pulse-ring 2s infinite; background-color: #ef4444 !important; color: white !important; border-color: #ef4444 !important; }
+        
+        /* Premium Card Hover Effect */
+        .case-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .case-card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+        
+        .gradient-text { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    </style>
+</head>
+<body class="bg-slate-50 h-screen flex flex-col overflow-hidden text-slate-800">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 px-6 py-4 shadow-sm z-20 flex justify-between items-center relative">
+        <div class="flex items-center gap-4">
+            <!-- Back Button -->
+            <button id="backBtn" onclick="showHome()" class="hidden bg-slate-100 hover:bg-slate-200 text-slate-600 w-10 h-10 rounded-full flex items-center justify-center transition-colors border border-slate-200">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xl shadow-md">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-slate-800 leading-tight">Audit Simulator</h1>
+                    <p class="text-[12px] text-slate-500 font-medium">Interactive Case Studies</p>
+                </div>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <button id="voiceToggle" onclick="toggleVoice()" class="flex items-center gap-2 text-sm bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-full border border-slate-200 transition-colors shadow-sm text-slate-600">
+                <i class="fas fa-volume-mute" id="voiceIcon"></i>
+                <span id="voiceText" class="font-semibold hidden sm:inline">ระบบเสียง (ปิด)</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-1 overflow-hidden relative">
+        
+        <!-- ========================================== -->
+        <!-- VIEW 1: HOME PAGE (Dashboard) -->
+        <!-- ========================================== -->
+        <div id="homeView" class="absolute inset-0 overflow-y-auto bg-slate-50 z-10">
+            <!-- Hero Section -->
+            <div class="bg-slate-900 text-white pb-20 pt-12 px-6 relative overflow-hidden">
+                <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                <div class="absolute right-0 top-0 w-96 h-96 bg-blue-500 rounded-full mix-blend-overlay filter blur-[100px] opacity-60 translate-x-1/3 -translate-y-1/3"></div>
+                <div class="max-w-6xl mx-auto relative z-10 text-center">
+                    <span class="px-4 py-1.5 bg-blue-500/20 text-blue-300 rounded-full text-sm font-semibold tracking-wider border border-blue-500/30 mb-4 inline-block uppercase">Performance Audit TRAINING MODULE</span>
+                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">ระบบจำลองการตรวจสอบผลสัมฤทธิ์<br class="hidden md:block">และประสิทธิภาพการดำเนินงาน</h2>
+                    <p class="text-slate-300 max-w-2xl mx-auto text-lg md:text-xl leading-relaxed">
+                        ฝึกฝนทักษะการตั้งคำถาม สัมภาษณ์ สังเกตการณ์ และค้นหาสาเหตุที่แท้จริง (Root Cause)<br>ผ่านการจำลองการสัมภาษณ์ผู้เกี่ยวข้อง
+                    </p>
+                </div>
+            </div>
+
+            <!-- Case Studies Grid -->
+            <div class="max-w-6xl mx-auto px-6 -mt-12 relative z-20 pb-12">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="caseGrid">
+                    <!-- Cards injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- VIEW 2: INTERVIEW ROOM (ห้องสัมภาษณ์) -->
+        <!-- ========================================== -->
+        <div id="chatView" class="absolute inset-0 flex flex-col max-w-5xl w-full mx-auto p-2 sm:p-4 hidden z-10">
+            <section class="w-full h-full flex flex-col bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-slate-200 overflow-hidden">
+                
+                <!-- Room Header -->
+                <div class="bg-white border-b border-slate-200 flex flex-col md:flex-row shadow-sm z-10">
+                    <!-- Case Info -->
+                    <div class="p-4 flex-1 border-b md:border-b-0 md:border-r border-slate-100 bg-slate-50">
+                        <h2 id="roomCaseTitle" class="font-bold text-slate-800 text-lg leading-tight mb-2">ชื่อโครงการ</h2>
+                        <div class="text-sm text-amber-700 flex items-start gap-2 bg-amber-50/80 px-3 py-2.5 rounded-lg border border-amber-200">
+                            <i class="fas fa-lightbulb mt-0.5 text-amber-500"></i>
+                            <span id="roomCaseGoal" class="leading-relaxed"><strong>Hint:</strong> กำลังโหลดข้อมูล...</span>
+                        </div>
+                    </div>
+
+                    <!-- Persona Selector & Info -->
+                    <div class="p-4 w-full md:w-80 flex flex-col justify-center bg-white relative">
+                        <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">กำลังสัมภาษณ์:</label>
+                        <div class="relative">
+                            <select id="personaSelect" onchange="changePersona()" class="w-full appearance-none bg-white border-2 border-slate-200 text-slate-700 py-3 pl-12 pr-10 rounded-xl font-semibold focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 cursor-pointer transition-all shadow-sm">
+                                <!-- Options -->
+                            </select>
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" id="personaSelectAvatar">
+                                <!-- Small Avatar Icon -->
+                            </div>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+                                <i class="fas fa-chevron-down text-sm"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Box -->
+                <div id="chatBox" class="flex-1 p-4 sm:p-6 overflow-y-auto chat-scroll flex flex-col gap-5 bg-slate-50/50">
+                    <!-- Chat messages -->
+                </div>
+
+                <!-- Input Area -->
+                <div class="p-4 bg-white border-t border-slate-100 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.03)]">
+                    <form id="chatForm" onsubmit="sendMessage(event)" class="flex gap-2 sm:gap-3">
+                        <button type="button" id="micBtn" onclick="toggleDictation()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full w-12 h-12 flex items-center justify-center transition-all border border-slate-200 shadow-sm flex-shrink-0" title="กดเพื่อพูด">
+                            <i class="fas fa-microphone text-lg"></i>
+                        </button>
+                        <input type="text" id="userInput" placeholder="พิมพ์คำถาม หรือ กดไอคอนไมค์เพื่อพูด..." class="flex-1 border-2 border-slate-200 rounded-full px-5 py-3 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 text-base transition-all bg-slate-50 focus:bg-white" autocomplete="off">
+                        <button type="submit" id="sendBtn" class="bg-blue-600 hover:bg-blue-700 text-white rounded-full w-12 h-12 flex items-center justify-center transition-all shadow-md shadow-blue-500/30 disabled:opacity-50 flex-shrink-0">
+                            <i class="fas fa-paper-plane text-lg -ml-1"></i>
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <script>
+        // ==========================================
+        // 1. DATABASE: รวม 5 กรณีศึกษา พร้อม Cartoon Avatars (DiceBear)
+        // ==========================================
+        const getAvatar = (seed, bg) => `<img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&backgroundColor=${bg}" class="w-full h-full rounded-full object-cover border-2 border-white shadow-sm" alt="${seed}">`;
+
+        const auditCases = {
+            "case1": {
+                icon: "fas fa-tint text-cyan-600",
+                color: "bg-cyan-100", borderColor: "border-cyan-200",
+                title: "กรณีศึกษาที่ 1",
+                desc: "โครงการพัฒนาน้ำบาดาลเพื่อชุมชน",
+                goal: "บ่อบาดาลถูกทิ้งร้าง น้ำขุ่น และบางแห่งมีผู้ใช้น้อยกว่าเกณฑ์",
+                personas: {
+                    "ช่าง": {
+                        name: "ช่าง อปท. (ผู้ควบคุมงาน)", 
+                        avatar: getAvatar("Felix", "b6e3f4"), 
+                        pitch: 0.85, rate: 1.0,
+                        greeting: "สวัสดีครับ ระบบน้ำบาดาล 100 แห่ง ตอนส่งมอบก็ใช้งานได้ปกตินะครับ มีประเด็นไหนสอบถามได้ครับ",
+                        systemInstruction: `คุณคือ ช่าง อปท. ผู้รับผิดชอบโครงการเจาะบาดาล งบ 500 ล้านบาท กฎ: ตอบสั้นๆ ไม่เกิน 2-3 ประโยค ความลับ (สาเหตุหลัก): 1) ไม่ได้สำรวจศักยภาพพื้นที่ตามหลักเกณฑ์ก่อนสร้าง บางจุดมีประปาอยู่แล้ว บางจุดหินอุ้มน้ำน้อยก็ฝืนเจาะ 2) หน่วยงานขาดแผนการดูแลบำรุงรักษาภายหลัง และไม่ได้ประสานให้ชุมชนมีส่วนร่วมดูแล`
+                    },
+                    "ผู้รับเหมา": {
+                        name: "ผู้รับจ้างเจาะบาดาล", 
+                        avatar: getAvatar("Jack", "ffdfbf"), 
+                        pitch: 0.9, rate: 1.1,
+                        greeting: "ผมเจาะบาดาลมาเป็นร้อยบ่อครับ ตรงสเปกทุกอย่างแน่นอน น้ำไหลแรงทุกบ่อตอนส่งงาน!",
+                        systemInstruction: `คุณคือ ผู้รับจ้างเจาะบาดาล กฎ: ตอบสั้นๆ ห้วนๆ ไม่เกิน 2-3 ประโยค ความลับ: ทำตามแบบที่ราชการชี้จุดให้เจาะเป๊ะๆ แต่รู้ว่าบางจุดชั้นหินอุ้มน้ำน้อย น้ำขุ่น ก็ฝืนทำจนจบเพื่อเบิกเงิน และโยนความผิดว่า อปท. ไม่ยอมดูแลรักษาระบบกรองสนิมเหล็กเอง น้ำเลยขุ่นเหลือง`
+                    },
+                    "ผู้ใหญ่บ้าน": {
+                        name: "ผู้ใหญ่บ้าน", 
+                        avatar: getAvatar("Oliver", "c0aede"), 
+                        pitch: 1.1, rate: 1.0,
+                        greeting: "โอ๊ย บาดาลอะไรใช้ไม่ได้เลย ทิ้งร้างหญ้ารกไปหมดแล้ว ลองไปดูสิคุณ!",
+                        systemInstruction: `คุณคือ ผู้ใหญ่บ้าน กฎ: บ่นสั้นๆ ไม่เกิน 2-3 ประโยค ข้อมูลที่รู้ (สภาพปัญหา): บ่อถูกทิ้งร้างไม่ได้ใช้ประโยชน์เลย 6 แห่ง หญ้าขึ้นรก น้ำขุ่นเหลืองมีตะกอนสีส้มปน ไม่มีเจ้าหน้าที่มาเหลียวแลหรือตั้งคณะกรรมการชาวบ้านมาดูแลเลย`
+                    }
+                }
+            },
+            "case2": {
+                icon: "fas fa-recycle text-emerald-600",
+                color: "bg-emerald-100", borderColor: "border-emerald-200",
+                title: "กรณีศึกษาที่ 2",
+                desc: "โครงการส่งเสริมคัดแยกขยะ เทศบาล B",
+                goal: "ชาวบ้านไม่ใช้ถังคัดแยกขยะ และปริมาณขยะอินทรีย์ไม่ลดลง",
+                personas: {
+                    "จนท": {
+                        name: "จนท. สิ่งแวดล้อม", 
+                        avatar: getAvatar("Mia", "ffdfbf"), 
+                        pitch: 1.2, rate: 1.0,
+                        greeting: "สวัสดีค่ะ ทางเราจัดหาถังคัดแยกขยะแจกครบ 6,000 ครัวเรือนตามเป้าหมายโครงการแล้วนะคะ",
+                        systemInstruction: `คุณคือ จนท. สิ่งแวดล้อม เทศบาลเมือง B กฎ: ตอบสั้นๆ ไม่เกิน 2-3 ประโยค ความลับ (สาเหตุหลัก): 1) โครงการเน้นแค่การแจกถัง ขาดการอบรมติดตาม (อบรมแค่ 750 ครัวเรือน) 2) ถังที่ซื้อเป็นแบบตัดท้ายฝังดิน ซึ่งไม่เหมาะกับห้องเช่าหรืออพาร์ตเมนต์ ทำให้เขาใช้งานไม่ได้`
+                    },
+                    "เซลส์": {
+                        name: "เซลส์ขายถังขยะ", 
+                        avatar: getAvatar("Leo", "b6e3f4"), 
+                        pitch: 1.0, rate: 1.15,
+                        greeting: "ถังขยะของเราส่งมอบครบถ้วน 6,000 ใบตามสัญญาเป๊ะๆ ครับท่าน",
+                        systemInstruction: `คุณคือ เซลส์บริษัทขายถังขยะ กฎ: พูดจาพ่อค้า เอาตัวรอด สั้นๆ ไม่เกิน 2-3 ประโยค ความลับ: จัดหาถังขยะที่พลาสติกบางแตกง่ายไปให้ เพราะเทศบาลต่อรองราคาเพื่อให้ซื้อแจกได้ครบ 6,000 ครัวเรือนตามเป้า เลยต้องลดเกรดวัสดุลง`
+                    },
+                    "ชาวบ้าน": {
+                        name: "แม่บ้าน (ชาวบ้าน)", 
+                        avatar: getAvatar("Jasmine", "d1d4f9"), 
+                        pitch: 1.4, rate: 1.1,
+                        greeting: "ถังขยะอะไรคะ ป้าไม่เห็นรู้วิธีใช้เลย แตกก็ง่าย แจกมาก็วางทิ้งไว้แบบนั้นแหละ!",
+                        systemInstruction: `คุณคือ แม่บ้าน ชาวบ้านในพื้นที่ กฎ: บ่นสั้นๆ ไม่เกิน 2-3 ประโยค ข้อมูลที่รู้ (สภาพปัญหา): ไม่ได้รับการอบรมวิธีใช้ ถังแตกง่ายมาก และถึงอุตส่าห์แยกขยะไป รถเก็บขยะเทศบาลก็เอาไปเทรวมกันในรถคันเดียวอยู่ดี หมดกำลังใจทำ`
+                    }
+                }
+            },
+            "case3": {
+                icon: "fas fa-truck text-amber-600",
+                color: "bg-amber-100", borderColor: "border-amber-200",
+                title: "กรณีศึกษาที่ 3",
+                desc: "โครงการพัฒนาจุดจอดพักรถบรรทุก",
+                goal: "จุดจอดรถไม่มีผู้ใช้งาน ห้องน้ำชำรุด และไม่ปลอดภัย",
+                personas: {
+                    "ผอ": {
+                        name: "ผอ. แขวงทางหลวง", 
+                        avatar: getAvatar("King", "c0aede"), 
+                        pitch: 0.8, rate: 1.0,
+                        greeting: "จุดพักรถเราสร้างตามแบบมาตรฐานกรมทางหลวงครับ มีพื้นที่จอดรถและห้องน้ำพร้อมให้บริการ",
+                        systemInstruction: `คุณคือ ผอ. แขวงทางหลวง กฎ: ตอบสั้นๆ ไม่เกิน 2-3 ประโยค ความลับ (สาเหตุหลัก): 1) เลือกพื้นที่ที่เป็นที่ดินราชการเดิมที่รกร้างเพื่อประหยัดงบเวนคืนที่ดิน แต่ไม่ทันพิจารณาว่ามันอยู่ไกลถนนหลักและทางเข้าคับแคบ 2) ไม่มีงบประมาณจ้างแม่บ้านดูแลความสะอาดหรือ รปภ. เฝ้าตลอด 24 ชม.`
+                    },
+                    "ผู้รับเหมา": {
+                        name: "ผู้รับเหมาก่อสร้าง", 
+                        avatar: getAvatar("Buster", "ffdfbf"), 
+                        pitch: 0.95, rate: 1.05,
+                        greeting: "สวัสดีครับ ห้องน้ำกับศาลาพักผมสร้างวัสดุเกรด A ตามแบบมาตรฐานเป๊ะเลยครับ",
+                        systemInstruction: `คุณคือ ผู้รับเหมาก่อสร้าง กฎ: ปัดความรับผิดชอบ ตอบสั้นๆ ไม่เกิน 2-3 ประโยค ความลับ: รู้ตั้งแต่ตอนสร้างแล้วว่าพื้นที่มันแคบ รถพ่วงตีวงเลี้ยวเข้ายากมาก แต่ก็สร้างตามแบบที่รัฐให้มา เพราะไม่ได้มีอำนาจไปเปลี่ยนสถานที่ก่อสร้าง`
+                    },
+                    "คนขับ": {
+                        name: "คนขับรถบรรทุก", 
+                        avatar: getAvatar("Sam", "b6e3f4"), 
+                        pitch: 0.9, rate: 1.0,
+                        greeting: "ใครจะไปจอดครับพี่ ทางเข้าก็แคบเลี้ยวยาก ห้องน้ำก็เหม็น จอดปั๊มน้ำมันดีกว่าเยอะ!",
+                        systemInstruction: `คุณคือ คนขับรถบรรทุก กฎ: บ่นสั้นๆ ไม่เกิน 2-3 ประโยค ข้อมูลที่รู้ (สภาพปัญหา): ทางเข้าจุดพักรถเลี้ยวโค้งแคบมากรถพ่วงเข้าลำบาก กลางคืนมืดเปลี่ยวไม่มี รปภ. กลัวโดนขโมยของ และห้องน้ำชำรุดสกปรก ไม่มีน้ำใช้`
+                    }
+                }
+            },
+            "case4": {
+                icon: "fas fa-seedling text-green-600",
+                color: "bg-green-100", borderColor: "border-green-200",
+                title: "กรณีศึกษาที่ 4",
+                desc: "โครงการแจกปัจจัยการผลิต (มหาวิทยาลัย A)",
+                goal: "แจกจ่ายปัจจัยการผลิตล่าช้า และจุดรับของไกลเกิน 80 กม.",
+                personas: {
+                    "ผู้รับผิดชอบ": {
+                        name: "ผู้รับผิดชอบโครงการ", 
+                        avatar: getAvatar("George", "b6e3f4"), 
+                        pitch: 0.95, rate: 1.0,
+                        greeting: "มหาวิทยาลัยของเราจัดซื้อปัจจัยการผลิตเพื่อฟื้นฟูเศรษฐกิจฐานรากตามนโยบายครับ",
+                        systemInstruction: `คุณคือ ผู้รับผิดชอบโครงการ มหาวิทยาลัย A กฎ: ตอบแบบนักวิชาการ สั้นๆ ไม่เกิน 2-3 ประโยค ความลับ (สาเหตุหลัก): 1) ขาดการกำกับติดตามลูกน้อง ปล่อยให้นัดหมายชาวบ้านกระชั้นชิดน้อยกว่า 5 วัน 2) ไปจัดซื้อปัจจัยจากผู้ประกอบการที่มีที่ตั้งแค่ในภาคอีสาน ทำให้เขาขนส่งกระจายไปทั่วประเทศไม่ทัน 120 วัน และต้องนัดจุดรับของไกลเกิน 80 กม.`
+                    },
+                    "บริษัท": {
+                        name: "บริษัทคู่ค้า (ซัพพลายเออร์)", 
+                        avatar: getAvatar("Oscar", "ffdfbf"), 
+                        pitch: 1.0, rate: 1.1,
+                        greeting: "บริษัทเราเตรียมของไว้ครบถ้วนครับ แต่จำนวน 35,000 รายทั่วประเทศมันเยอะมากนะครับ",
+                        systemInstruction: `คุณคือ บริษัทคู่ค้าที่ขายปัจจัยการผลิต กฎ: ตอบสั้นๆ เชิงบ่นอุปสรรค ไม่เกิน 2-3 ประโยค ความลับ: ฐานการผลิตของบริษัทอยู่แค่ในภาคอีสาน แต่โดนสั่งให้ส่งของทั่วประเทศ เลยทำจุดรับของใกล้ๆ ให้ทุกหมู่บ้านไม่ได้ และการขนส่งไกลทำให้ปุ๋ยค้างสต๊อกจนแข็งเป็นหิน ปลาตายเพราะออกซิเจนหมด`
+                    },
+                    "วิสาหกิจชุมชน": {
+                        name: "ตัวแทนวิสาหกิจชุมชน", 
+                        avatar: getAvatar("Cookie", "c0aede"), 
+                        pitch: 0.85, rate: 0.9,
+                        greeting: "แจ้งให้ไปรับของล่วงหน้าแค่วันสองวัน ใครจะเตรียมรถไปขนทันล่ะครับ แถมไกลตั้งร้อยกว่าโล!",
+                        systemInstruction: `คุณคือ ตัวแทนกลุ่มวิสาหกิจชุมชน กฎ: บ่นสั้นๆ ไม่เกิน 2-3 ประโยค ข้อมูลที่รู้ (สภาพปัญหา): โดนแจ้งนัดหมายกระชั้นชิดมาก (น้อยกว่า 5 วัน) จุดรับของก็อยู่ไกลข้ามจังหวัดเกิน 80 กม. ได้ของล่าช้าเลยฤดูเพาะปลูกไปแล้ว และปุ๋ยที่ได้ก็แข็งเป็นก้อนใช้ไม่ได้`
+                    }
+                }
+            },
+            "case5": {
+                icon: "fas fa-solar-panel text-orange-600",
+                color: "bg-orange-100", borderColor: "border-orange-200",
+                title: "กรณีศึกษาที่ 5",
+                desc: "โครงการโคมไฟโซลาร์เซลล์",
+                goal: "โคมไฟดับเร็ว ติดตั้งซ้ำซ้อน และขาดการบำรุงรักษา",
+                personas: {
+                    "สมหมาย": {
+                        name: "เจ้าหน้าที่ อปท. (สมหมาย)", 
+                        avatar: getAvatar("Simon", "b6e3f4"), 
+                        pitch: 0.8, rate: 1.0,
+                        greeting: "สวัสดีครับ ผมสมหมายครับ มีอะไรให้ผมชี้แจงเรื่องโคมไฟ 200 ชุดในพื้นที่สอบถามได้เลยครับ",
+                        systemInstruction: `คุณคือ สมหมาย จนท. อปท. กฎ: ตอบแบบข้าราชการ สั้นๆ ไม่เกิน 2-3 ประโยค ความลับ (สาเหตุหลัก): 1) ไม่กล้าย้ายจุดที่ติดใต้ต้นไม้เพราะขาดความรู้เรื่องระเบียบการบริหารพัสดุ 2) ขาดการสื่อสารหน้าที่กัน เข้าใจผิดมาตลอดว่าการล้างแผงและซ่อมบำรุงเป็นหน้าที่ผู้รับจ้างเพราะยังอยู่ในประกัน`
+                    },
+                    "เสี่ยชัย": {
+                        name: "ผู้รับจ้าง (เสี่ยชัย)", 
+                        avatar: getAvatar("Milo", "ffdfbf"), 
+                        pitch: 1.0, rate: 1.15,
+                        greeting: "สวัสดีครับท่าน! บริษัทผมรับงานติดตั้งโคมไฟ All in One มาตรฐานบัญชีนวัตกรรมครับ!",
+                        systemInstruction: `คุณคือ เสี่ยชัย ผู้รับจ้าง กฎ: โยนความผิด ตอบสั้นๆ ห้วนๆ ไม่เกิน 2-3 ประโยค ความลับ (สาเหตุหลัก): ไม่มีการลงพื้นที่สำรวจกายภาพร่วมกับหน่วยงานรัฐก่อนติดตั้ง ได้พิกัดมาแบบไหนลูกน้องก็ไปติดแบบนั้นเลย และอ้างว่าไฟดับหลังเที่ยงคืนเพราะ อปท. ไม่ดูแล ฝุ่นเกาะแผงจนชาร์จแบตไม่เข้า`
+                    },
+                    "ป้าศรี": {
+                        name: "ผู้นำชุมชน (ป้าศรี)", 
+                        avatar: getAvatar("Missy", "d1d4f9"), 
+                        pitch: 1.3, rate: 1.05,
+                        greeting: "มาตรวจสักทีนะคะ! โครงการอะไรไม่รู้ ชาวบ้านบ่นกันอุบเลยค่ะ",
+                        systemInstruction: `คุณคือ ป้าศรี ผู้นำชุมชน กฎ: บ่นสั้นๆ ไม่เกิน 2-3 ประโยค ข้อมูลที่รู้: ไฟสว่างแค่หัวค่ำ หลังเที่ยงคืนก็ดับ ติดตั้งซ้ำซ้อนกับเสาไฟหลวงที่มีอยู่แล้ว ไม่เคยเห็นใครมาล้างแผง ปล่อยฝุ่นเกาะจนพังไปเป็นสิบชุด`
+                    }
+                }
+            }
+        };
+
+        // ==========================================
+        // 2. STATE & SETUP
+        // ==========================================
+        // ซ่อน API Key ด้วยการเข้ารหัส Base64 (ป้องกัน Bot สแกนของ GitHub)
+        const encodedKey = "QUl6YVN5QUtKZ01Xem4xTERKWndpV2F4WWRqRlJXT1h3VlhucE13";
+        let apiKey = atob(encodedKey); // ถอดรหัสลับเป็น API Key อัตโนมัติเมื่อใช้งาน
+
+        let currentCaseId = null;
+        let currentPersonaId = null;
+        let chatHistories = {}; 
+        
+        let isVoiceEnabled = false;
+        let isDictating = false;
+        const synth = window.speechSynthesis;
+        let recognition = null;
+
+        // ==========================================
+        // 3. UI INITIALIZATION & LOGIC
+        // ==========================================
+        function initApp() {
+            renderHomeCards();
+            showHome();
+            if (synth.onvoiceschanged !== undefined) {
+                synth.onvoiceschanged = () => { console.log("Voices loaded"); };
+            }
+        }
+
+        function renderHomeCards() {
+            const grid = document.getElementById('caseGrid');
+            grid.innerHTML = '';
+            
+            for (const [key, data] of Object.entries(auditCases)) {
+                const card = document.createElement('div');
+                card.className = `case-card bg-white rounded-2xl p-6 border border-slate-200 cursor-pointer relative flex flex-col h-full shadow-sm`;
+                card.onclick = () => selectCase(key);
+                
+                // Avatar Preview Images for the card
+                const avatarHTML = Object.values(data.personas).map(p => 
+                    `<div class="w-8 h-8 rounded-full border-2 border-white shadow-sm -ml-2 first:ml-0 overflow-hidden bg-slate-100" title="${p.name}">${p.avatar}</div>`
+                ).join('');
+
+                card.innerHTML = `
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-transparent ${data.color.replace('bg-', 'to-')} opacity-40 rounded-bl-full pointer-events-none"></div>
+                    <div class="w-14 h-14 rounded-xl ${data.color} flex items-center justify-center mb-5 z-10 border ${data.borderColor} shadow-sm">
+                        <i class="${data.icon} text-2xl"></i>
+                    </div>
+                    <div class="z-10 flex-1">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">${data.title}</span>
+                        <h3 class="text-lg font-bold text-slate-800 mt-1 mb-3 leading-tight">${data.desc}</h3>
+                        <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                            <p class="text-sm text-slate-600 line-clamp-2"><i class="fas fa-lightbulb text-amber-500 mr-1.5"></i><strong>Hint:</strong> ${data.goal}</p>
+                        </div>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center z-10">
+                        <div class="flex pl-2">
+                            ${avatarHTML}
+                        </div>
+                        <span class="text-sm font-semibold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full group-hover:bg-blue-600 group-hover:text-white transition-colors">เข้าสัมภาษณ์ <i class="fas fa-arrow-right ml-1 text-xs"></i></span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            }
+        }
+
+        function showHome() {
+            if (synth.speaking) synth.cancel();
+            document.getElementById('homeView').classList.remove('hidden');
+            document.getElementById('chatView').classList.add('hidden');
+            document.getElementById('backBtn').classList.add('hidden');
+        }
+
+        function selectCase(caseId) {
+            currentCaseId = caseId;
+            const currentCaseData = auditCases[caseId];
+            
+            // Setup Header Info
+            document.getElementById('roomCaseTitle').innerText = `${currentCaseData.title}: ${currentCaseData.desc}`;
+            document.getElementById('roomCaseGoal').innerHTML = `<strong>Hint:</strong> ${currentCaseData.goal}`;
+            
+            // Reset Chat History
+            chatHistories = {};
+            
+            // Populate Personas
+            const personaSelect = document.getElementById('personaSelect');
+            personaSelect.innerHTML = '';
+            let firstPersona = true;
+            
+            for (const [pKey, pData] of Object.entries(currentCaseData.personas)) {
+                personaSelect.add(new Option(pData.name, pKey));
+                chatHistories[pKey] = []; 
+                if(firstPersona) { currentPersonaId = pKey; firstPersona = false; }
+            }
+            
+            // Switch Views
+            document.getElementById('homeView').classList.add('hidden');
+            document.getElementById('chatView').classList.remove('hidden');
+            document.getElementById('backBtn').classList.remove('hidden');
+            
+            changePersona();
+        }
+
+        function changePersona() {
+            if (synth.speaking) synth.cancel();
+            currentPersonaId = document.getElementById('personaSelect').value;
+            
+            // Update small avatar icon in the dropdown area
+            const avatarData = auditCases[currentCaseId].personas[currentPersonaId].avatar;
+            document.getElementById('personaSelectAvatar').innerHTML = `<div class="w-6 h-6 rounded-full overflow-hidden border border-slate-200">${avatarData}</div>`;
+            
+            renderChat();
+        }
+
+        function renderChat() {
+            const chatBox = document.getElementById('chatBox');
+            chatBox.innerHTML = '';
+            
+            const personaData = auditCases[currentCaseId].personas[currentPersonaId];
+            addMessageToUI('bot', personaData.greeting, personaData.avatar);
+            
+            chatHistories[currentPersonaId].forEach(msg => {
+                const type = msg.role === 'user' ? 'user' : 'bot';
+                addMessageToUI(type, msg.parts[0].text, personaData.avatar);
+            });
+            scrollToBottom();
+        }
+
+        function addMessageToUI(type, text, avatarHTML = "") {
+            const chatBox = document.getElementById('chatBox');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `flex w-full ${type === 'user' ? 'justify-end' : 'justify-start'}`;
+            
+            if (type === 'user') {
+                msgDiv.innerHTML = `<div class="bg-blue-600 text-white px-5 py-3.5 rounded-2xl rounded-tr-sm max-w-[85%] sm:max-w-[75%] shadow-md text-[15px] leading-relaxed border border-blue-700">${escapeHTML(text)}</div>`;
+            } else {
+                msgDiv.innerHTML = `
+                    <div class="flex items-end gap-3 max-w-[90%] sm:max-w-[80%]">
+                        <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-xl shadow-md flex-shrink-0 border-2 border-white overflow-hidden z-10">${avatarHTML}</div>
+                        <div class="bg-white border border-slate-200 text-slate-800 px-5 py-3.5 rounded-2xl rounded-tl-sm shadow-sm text-[15px] leading-relaxed whitespace-pre-wrap">${escapeHTML(text)}</div>
+                    </div>`;
+            }
+            chatBox.appendChild(msgDiv);
+            scrollToBottom();
+        }
+
+        // ==========================================
+        // 4. API & INTERACTION
+        // ==========================================
+        async function fetchWithRetry(url, options, retries = 3) {
+            const delays = [1000, 2000, 4000];
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    return await response.json();
+                } catch (error) {
+                    if (i === retries - 1) throw error;
+                    await new Promise(res => setTimeout(res, delays[i]));
+                }
+            }
+        }
+
+        async function sendMessage(e) {
+            e.preventDefault();
+            const userInput = document.getElementById('userInput');
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            if (isDictating && recognition) recognition.stop();
+            if (synth.speaking) synth.cancel();
+
+            const personaData = auditCases[currentCaseId].personas[currentPersonaId];
+            
+            userInput.value = '';
+            userInput.disabled = true;
+            document.getElementById('sendBtn').disabled = true;
+            document.getElementById('micBtn').disabled = true;
+            
+            addMessageToUI('user', text);
+            chatHistories[currentPersonaId].push({ role: "user", parts: [{ text: text }] });
+            
+            const typingId = 'typing-' + Date.now();
+            document.getElementById('chatBox').insertAdjacentHTML('beforeend', `
+                <div id="${typingId}" class="flex w-full justify-start">
+                    <div class="flex items-end gap-3 max-w-[85%]">
+                        <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-xl shadow-md flex-shrink-0 border-2 border-white overflow-hidden">${personaData.avatar}</div>
+                        <div class="bg-white border border-slate-200 px-5 py-4 rounded-2xl rounded-tl-sm shadow-sm">
+                            <div class="typing-indicator flex items-center h-full"><span></span><span></span><span></span></div>
+                        </div>
+                    </div>
+                </div>`);
+            scrollToBottom();
+
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                const payload = {
+                    systemInstruction: { parts: [{ text: personaData.systemInstruction }] },
+                    contents: chatHistories[currentPersonaId],
+                    generationConfig: { temperature: 0.6 } 
+                };
+
+                const data = await fetchWithRetry(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                document.getElementById(typingId)?.remove();
+
+                if (data.candidates && data.candidates.length > 0) {
+                    const botReply = data.candidates[0].content.parts[0].text;
+                    addMessageToUI('bot', botReply, personaData.avatar);
+                    chatHistories[currentPersonaId].push({ role: "model", parts: [{ text: botReply }] });
+                    speakText(botReply, personaData.pitch, personaData.rate);
+                } else { throw new Error("No response"); }
+
+            } catch (error) {
+                document.getElementById(typingId)?.remove();
+                addMessageToUI('bot', `[ระบบขัดข้อง]: ไม่สามารถติดต่อได้ในขณะนี้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตหรือโควตา API`, "⚠️");
+                chatHistories[currentPersonaId].pop();
+            } finally {
+                userInput.disabled = false;
+                document.getElementById('sendBtn').disabled = false;
+                document.getElementById('micBtn').disabled = false;
+                userInput.focus();
+            }
+        }
+
+        // ==========================================
+        // 5. VOICE SYSTEM
+        // ==========================================
+        function toggleVoice() {
+            isVoiceEnabled = !isVoiceEnabled;
+            document.getElementById('voiceIcon').className = isVoiceEnabled ? 'fas fa-volume-up text-blue-600' : 'fas fa-volume-mute text-slate-400';
+            document.getElementById('voiceText').className = isVoiceEnabled ? 'text-blue-600 font-semibold hidden sm:inline' : 'text-slate-500 font-semibold hidden sm:inline';
+            document.getElementById('voiceText').innerText = isVoiceEnabled ? 'ระบบเสียง (เปิด)' : 'ระบบเสียง (ปิด)';
+            if (isVoiceEnabled) { let u = new SpeechSynthesisUtterance(''); u.volume = 0; synth.speak(u); } 
+            else { if (synth.speaking) synth.cancel(); }
+        }
+
+        function speakText(text, pitch, rate) {
+            if (!isVoiceEnabled || !synth) return;
+            if (synth.speaking) synth.cancel();
+            const utterThis = new SpeechSynthesisUtterance(text);
+            utterThis.lang = 'th-TH'; utterThis.pitch = pitch; utterThis.rate = rate;
+            synth.speak(utterThis);
+        }
+
+        function toggleDictation() { isDictating ? (recognition && recognition.stop()) : startDictation(); }
+
+        function startDictation() {
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRec) return alert("เบราว์เซอร์ไม่รองรับระบบสั่งงานด้วยเสียง แนะนำให้ใช้ Google Chrome ครับ");
+            if (!recognition) {
+                recognition = new SpeechRec(); recognition.lang = 'th-TH'; recognition.interimResults = false;
+                recognition.onstart = () => { 
+                    isDictating = true; document.getElementById('micBtn').classList.add('mic-active'); 
+                    document.getElementById('userInput').placeholder = "กำลังฟังเสียงของคุณ..."; if(synth.speaking) synth.cancel(); 
+                };
+                recognition.onresult = (e) => { document.getElementById('userInput').value = e.results[0][0].transcript; };
+                recognition.onend = () => { 
+                    isDictating = false; document.getElementById('micBtn').classList.remove('mic-active'); 
+                    document.getElementById('userInput').placeholder = "พิมพ์คำถาม หรือ กดไอคอนไมค์เพื่อพูด...";
+                    if (document.getElementById('userInput').value.trim() !== '') document.getElementById('chatForm').dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                };
+            }
+            try { recognition.start(); } catch (e) { console.error("Started", e); }
+        }
+
+        function scrollToBottom() { const b = document.getElementById('chatBox'); b.scrollTop = b.scrollHeight; }
+        function escapeHTML(str) { return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag])); }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>

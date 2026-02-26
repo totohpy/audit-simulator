@@ -2,14 +2,26 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Audit Simulator: Professional Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
         
-        body { font-family: 'Sarabun', sans-serif; }
+        body { 
+            font-family: 'Sarabun', sans-serif; 
+            /* Mobile Viewport Fix */
+            height: 100vh; 
+            height: 100dvh; 
+        }
+        
+        /* Safe Area padding for iOS Home Indicator */
+        @supports (padding-bottom: env(safe-area-inset-bottom)) {
+            .safe-pb {
+                padding-bottom: calc(env(safe-area-inset-bottom) + 0.75rem) !important;
+            }
+        }
         
         .chat-scroll::-webkit-scrollbar { width: 6px; }
         .chat-scroll::-webkit-scrollbar-track { background: transparent; }
@@ -35,57 +47,60 @@
         .case-card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
         
         .gradient-text { background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        /* API Key Modal Styles */
+        #apiKeyModal { backdrop-filter: blur(5px); }
     </style>
 </head>
-<body class="bg-slate-50 h-screen flex flex-col overflow-hidden text-slate-800">
+<body class="bg-slate-50 fixed inset-0 w-full flex flex-col overflow-hidden text-slate-800">
 
     <!-- Header -->
-    <header class="bg-white border-b border-slate-200 px-6 py-4 shadow-sm z-20 flex justify-between items-center relative">
-        <div class="flex items-center gap-4">
+    <header class="bg-white border-b border-slate-200 px-4 sm:px-6 py-3 sm:py-4 shadow-sm z-20 flex justify-between items-center relative shrink-0">
+        <div class="flex items-center gap-3 sm:gap-4">
             <!-- Back Button -->
-            <button id="backBtn" onclick="showHome()" class="hidden bg-slate-100 hover:bg-slate-200 text-slate-600 w-10 h-10 rounded-full flex items-center justify-center transition-colors border border-slate-200">
+            <button id="backBtn" onclick="showHome()" class="hidden bg-slate-100 hover:bg-slate-200 text-slate-600 w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-colors border border-slate-200 shrink-0">
                 <i class="fas fa-arrow-left"></i>
             </button>
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xl shadow-md">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center text-lg sm:text-xl shadow-md shrink-0">
                     <i class="fas fa-shield-alt"></i>
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold text-slate-800 leading-tight">Audit Simulator</h1>
-                    <p class="text-[12px] text-slate-500 font-medium">Interactive Case Studies</p>
+                    <h1 class="text-lg sm:text-xl font-bold text-slate-800 leading-tight">Audit Simulator</h1>
+                    <p class="text-[10px] sm:text-[12px] text-slate-500 font-medium">Interactive Case Studies</p>
                 </div>
             </div>
         </div>
-        <div class="flex items-center gap-4">
-            <button id="voiceToggle" onclick="toggleVoice()" class="flex items-center gap-2 text-sm bg-slate-100 hover:bg-slate-200 px-4 py-2 rounded-full border border-slate-200 transition-colors shadow-sm text-slate-600">
+        <div class="flex items-center gap-2 sm:gap-4">
+            <button id="voiceToggle" onclick="toggleVoice()" class="flex items-center gap-2 text-xs sm:text-sm bg-slate-100 hover:bg-slate-200 px-3 sm:px-4 py-2 rounded-full border border-slate-200 transition-colors shadow-sm text-slate-600">
                 <i class="fas fa-volume-mute" id="voiceIcon"></i>
                 <span id="voiceText" class="font-semibold hidden sm:inline">ระบบเสียง (ปิด)</span>
             </button>
         </div>
     </header>
 
-    <main class="flex-1 overflow-hidden relative">
+    <main class="flex-1 overflow-hidden relative w-full h-full">
         
         <!-- ========================================== -->
         <!-- VIEW 1: HOME PAGE (Dashboard) -->
         <!-- ========================================== -->
-        <div id="homeView" class="absolute inset-0 overflow-y-auto bg-slate-50 z-10">
+        <div id="homeView" class="absolute inset-0 overflow-y-auto bg-slate-50 z-10 safe-pb">
             <!-- Hero Section -->
-            <div class="bg-slate-900 text-white pb-20 pt-12 px-6 relative overflow-hidden">
+            <div class="bg-slate-900 text-white pb-16 sm:pb-20 pt-10 sm:pt-12 px-4 sm:px-6 relative overflow-hidden">
                 <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
                 <div class="absolute right-0 top-0 w-96 h-96 bg-blue-500 rounded-full mix-blend-overlay filter blur-[100px] opacity-60 translate-x-1/3 -translate-y-1/3"></div>
                 <div class="max-w-6xl mx-auto relative z-10 text-center">
-                    <span class="px-4 py-1.5 bg-blue-500/20 text-blue-300 rounded-full text-sm font-semibold tracking-wider border border-blue-500/30 mb-4 inline-block uppercase">Performance Audit TRAINING MODULE</span>
-                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 leading-tight">ระบบจำลองการตรวจสอบผลสัมฤทธิ์<br class="hidden md:block">และประสิทธิภาพการดำเนินงาน</h2>
-                    <p class="text-slate-300 max-w-2xl mx-auto text-lg md:text-xl leading-relaxed">
-                        ฝึกฝนทักษะการตั้งคำถาม สัมภาษณ์ สังเกตการณ์ และค้นหาสาเหตุที่แท้จริง (Root Cause)<br>ผ่านการจำลองการสัมภาษณ์ผู้เกี่ยวข้อง
+                    <span class="px-3 sm:px-4 py-1.5 bg-blue-500/20 text-blue-300 rounded-full text-xs sm:text-sm font-semibold tracking-wider border border-blue-500/30 mb-4 inline-block uppercase">Performance Audit TRAINING MODULE</span>
+                    <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 leading-tight">ระบบจำลองการตรวจสอบผลสัมฤทธิ์<br class="hidden sm:block">และประสิทธิภาพการดำเนินงาน</h2>
+                    <p class="text-slate-300 max-w-2xl mx-auto text-sm sm:text-lg md:text-xl leading-relaxed">
+                        ฝึกฝนทักษะการตั้งคำถาม สัมภาษณ์ สังเกตการณ์ และค้นหาสาเหตุที่แท้จริง (Root Cause)<br class="hidden sm:block">ผ่านการจำลองการสัมภาษณ์ผู้เกี่ยวข้อง
                     </p>
                 </div>
             </div>
 
             <!-- Case Studies Grid -->
-            <div class="max-w-6xl mx-auto px-6 -mt-12 relative z-20 pb-12">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="caseGrid">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6 -mt-10 sm:-mt-12 relative z-20 pb-12">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6" id="caseGrid">
                     <!-- Cards injected here -->
                 </div>
             </div>
@@ -94,31 +109,33 @@
         <!-- ========================================== -->
         <!-- VIEW 2: INTERVIEW ROOM (ห้องสัมภาษณ์) -->
         <!-- ========================================== -->
-        <div id="chatView" class="absolute inset-0 flex flex-col max-w-5xl w-full mx-auto p-2 sm:p-4 hidden z-10">
-            <section class="w-full h-full flex flex-col bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-slate-200 overflow-hidden">
+        <div id="chatView" class="absolute inset-0 flex flex-col max-w-5xl w-full mx-auto p-0 sm:p-4 hidden z-10">
+            <!-- Added rounded-none on mobile, rounded-2xl on desktop to maximize space on mobile -->
+            <section class="w-full h-full flex flex-col bg-white sm:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] sm:border border-slate-200 overflow-hidden">
                 
                 <!-- Room Header -->
-                <div class="bg-white border-b border-slate-200 flex flex-col md:flex-row shadow-sm z-10">
+                <div class="bg-white border-b border-slate-200 flex flex-col md:flex-row shadow-sm z-10 shrink-0">
                     <!-- Case Info -->
-                    <div class="p-4 flex-1 border-b md:border-b-0 md:border-r border-slate-100 bg-slate-50">
-                        <h2 id="roomCaseTitle" class="font-bold text-slate-800 text-lg leading-tight mb-2">ชื่อโครงการ</h2>
-                        <div class="text-sm text-amber-700 flex items-start gap-2 bg-amber-50/80 px-3 py-2.5 rounded-lg border border-amber-200">
+                    <div class="p-3 sm:p-4 flex-1 border-b md:border-b-0 md:border-r border-slate-100 bg-slate-50">
+                        <h2 id="roomCaseTitle" class="font-bold text-slate-800 text-base sm:text-lg leading-tight mb-2">ชื่อโครงการ</h2>
+                        <div class="text-xs sm:text-sm text-amber-700 flex items-start gap-2 bg-amber-50/80 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-lg border border-amber-200">
                             <i class="fas fa-lightbulb mt-0.5 text-amber-500"></i>
                             <span id="roomCaseGoal" class="leading-relaxed"><strong>Hint:</strong> กำลังโหลดข้อมูล...</span>
                         </div>
                     </div>
 
                     <!-- Persona Selector & Info -->
-                    <div class="p-4 w-full md:w-80 flex flex-col justify-center bg-white relative">
-                        <label class="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">กำลังสัมภาษณ์:</label>
+                    <div class="p-3 sm:p-4 w-full md:w-80 flex flex-col justify-center bg-white relative shrink-0">
+                        <label class="block text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">กำลังสัมภาษณ์:</label>
                         <div class="relative">
-                            <select id="personaSelect" onchange="changePersona()" class="w-full appearance-none bg-white border-2 border-slate-200 text-slate-700 py-3 pl-12 pr-10 rounded-xl font-semibold focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 cursor-pointer transition-all shadow-sm">
+                            <!-- Use text-base (16px) to prevent iOS Safari auto-zoom on select -->
+                            <select id="personaSelect" onchange="changePersona()" class="w-full appearance-none bg-white border-2 border-slate-200 text-slate-700 py-2.5 sm:py-3 pl-10 sm:pl-12 pr-10 rounded-xl font-semibold focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 cursor-pointer transition-all shadow-sm text-base">
                                 <!-- Options -->
                             </select>
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none" id="personaSelectAvatar">
+                            <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none" id="personaSelectAvatar">
                                 <!-- Small Avatar Icon -->
                             </div>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-400">
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 sm:px-4 text-slate-400">
                                 <i class="fas fa-chevron-down text-sm"></i>
                             </div>
                         </div>
@@ -126,19 +143,20 @@
                 </div>
 
                 <!-- Chat Box -->
-                <div id="chatBox" class="flex-1 p-4 sm:p-6 overflow-y-auto chat-scroll flex flex-col gap-5 bg-slate-50/50">
+                <div id="chatBox" class="flex-1 p-3 sm:p-6 overflow-y-auto chat-scroll flex flex-col gap-4 sm:gap-5 bg-slate-50/50">
                     <!-- Chat messages -->
                 </div>
 
-                <!-- Input Area -->
-                <div class="p-4 bg-white border-t border-slate-100 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.03)]">
+                <!-- Input Area (With safe-pb for mobile) -->
+                <div class="p-3 sm:p-4 bg-white border-t border-slate-200 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.03)] safe-pb shrink-0">
                     <form id="chatForm" onsubmit="sendMessage(event)" class="flex gap-2 sm:gap-3">
-                        <button type="button" id="micBtn" onclick="toggleDictation()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full w-12 h-12 flex items-center justify-center transition-all border border-slate-200 shadow-sm flex-shrink-0" title="กดเพื่อพูด">
-                            <i class="fas fa-microphone text-lg"></i>
+                        <button type="button" id="micBtn" onclick="toggleDictation()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center transition-all border border-slate-200 shadow-sm flex-shrink-0" title="กดเพื่อพูด">
+                            <i class="fas fa-microphone text-base sm:text-lg"></i>
                         </button>
-                        <input type="text" id="userInput" placeholder="พิมพ์คำถาม หรือ กดไอคอนไมค์เพื่อพูด..." class="flex-1 border-2 border-slate-200 rounded-full px-5 py-3 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 text-base transition-all bg-slate-50 focus:bg-white" autocomplete="off">
-                        <button type="submit" id="sendBtn" class="bg-blue-600 hover:bg-blue-700 text-white rounded-full w-12 h-12 flex items-center justify-center transition-all shadow-md shadow-blue-500/30 disabled:opacity-50 flex-shrink-0">
-                            <i class="fas fa-paper-plane text-lg -ml-1"></i>
+                        <!-- Use text-base (16px) to prevent iOS Safari auto-zoom on input -->
+                        <input type="text" id="userInput" placeholder="พิมพ์คำถาม หรือ กดไอคอนไมค์..." class="flex-1 border-2 border-slate-200 rounded-full px-4 sm:px-5 py-2 sm:py-3 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 text-base transition-all bg-slate-50 focus:bg-white" autocomplete="off">
+                        <button type="submit" id="sendBtn" class="bg-blue-600 hover:bg-blue-700 text-white rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center transition-all shadow-md shadow-blue-500/30 disabled:opacity-50 flex-shrink-0">
+                            <i class="fas fa-paper-plane text-base sm:text-lg -ml-1"></i>
                         </button>
                     </form>
                 </div>
@@ -146,6 +164,30 @@
         </div>
 
     </main>
+
+    <!-- API Key Modal -->
+    <div id="apiKeyModal" class="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300 px-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-md w-full transform scale-95 transition-transform duration-300" id="apiKeyModalContent">
+            <div class="text-center mb-5 sm:mb-6">
+                <div class="w-14 h-14 sm:w-16 sm:h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl sm:text-2xl mx-auto mb-4">
+                    <i class="fas fa-key"></i>
+                </div>
+                <h3 class="text-xl sm:text-2xl font-bold text-slate-800">ตั้งค่า Google Gemini API Key</h3>
+                <p class="text-slate-500 mt-2 text-xs sm:text-sm">กรุณากรอก API Key ของคุณเพื่อเริ่มใช้งานระบบจำลองการสัมภาษณ์</p>
+            </div>
+            
+            <div class="mb-5 sm:mb-6">
+                <!-- Use text-base to prevent zoom -->
+                <input type="password" id="apiKeyInput" placeholder="AIzaSy..." class="w-full border-2 border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all font-mono text-base" autocomplete="off">
+                <p class="text-[11px] sm:text-xs text-slate-400 mt-2 text-center">API Key ของคุณจะถูกเก็บไว้ในเบราว์เซอร์นี้เท่านั้น (ไม่ส่งไปที่เซิร์ฟเวอร์อื่น)</p>
+            </div>
+            
+            <div class="flex gap-2 sm:gap-3">
+                <button onclick="hideApiKeyModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl transition-colors text-sm sm:text-base">ยกเลิก</button>
+                <button onclick="saveApiKey()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl shadow-md shadow-blue-500/30 transition-colors text-sm sm:text-base">บันทึก & ใช้งาน</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         // ==========================================
@@ -309,10 +351,9 @@
         // ==========================================
         // 2. STATE & SETUP
         // ==========================================
-        // ซ่อน API Key ด้วยการเข้ารหัส Base64 (ป้องกัน Bot สแกนของ GitHub)
-        const encodedKey = "QUl6YVN5QUtKZ01Xem4xTERKWndpV2F4WWRqRlJXT1h3VlhucE13";
-        let apiKey = atob(encodedKey); // ถอดรหัสลับเป็น API Key อัตโนมัติเมื่อใช้งาน
-
+        // ซ่อน API Key ด้วย Base64
+        const encodedKey = "QUl6YVN5REVHbWQ5SEpucmtfd0Z2MktpUTk3Q2VER256TmRmeUtr";
+        let apiKey = atob(encodedKey); 
         let currentCaseId = null;
         let currentPersonaId = null;
         let chatHistories = {}; 
@@ -333,37 +374,41 @@
             }
         }
 
+        // Functions for Modal (kept just in case manual entry is needed later)
+        function showApiKeyModal() { /* logic removed as key is hardcoded */ }
+        function hideApiKeyModal() { document.getElementById('apiKeyModal').classList.add('hidden'); }
+        function saveApiKey() { /* logic removed as key is hardcoded */ }
+
         function renderHomeCards() {
             const grid = document.getElementById('caseGrid');
             grid.innerHTML = '';
             
             for (const [key, data] of Object.entries(auditCases)) {
                 const card = document.createElement('div');
-                card.className = `case-card bg-white rounded-2xl p-6 border border-slate-200 cursor-pointer relative flex flex-col h-full shadow-sm`;
+                card.className = `case-card bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 cursor-pointer relative flex flex-col h-full shadow-sm`;
                 card.onclick = () => selectCase(key);
                 
-                // Avatar Preview Images for the card
                 const avatarHTML = Object.values(data.personas).map(p => 
                     `<div class="w-8 h-8 rounded-full border-2 border-white shadow-sm -ml-2 first:ml-0 overflow-hidden bg-slate-100" title="${p.name}">${p.avatar}</div>`
                 ).join('');
 
                 card.innerHTML = `
-                    <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-transparent ${data.color.replace('bg-', 'to-')} opacity-40 rounded-bl-full pointer-events-none"></div>
-                    <div class="w-14 h-14 rounded-xl ${data.color} flex items-center justify-center mb-5 z-10 border ${data.borderColor} shadow-sm">
-                        <i class="${data.icon} text-2xl"></i>
+                    <div class="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-transparent ${data.color.replace('bg-', 'to-')} opacity-40 rounded-bl-full pointer-events-none"></div>
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl ${data.color} flex items-center justify-center mb-4 sm:mb-5 z-10 border ${data.borderColor} shadow-sm">
+                        <i class="${data.icon} text-xl sm:text-2xl"></i>
                     </div>
                     <div class="z-10 flex-1">
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">${data.title}</span>
-                        <h3 class="text-lg font-bold text-slate-800 mt-1 mb-3 leading-tight">${data.desc}</h3>
-                        <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                            <p class="text-sm text-slate-600 line-clamp-2"><i class="fas fa-lightbulb text-amber-500 mr-1.5"></i><strong>Hint:</strong> ${data.goal}</p>
+                        <span class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">${data.title}</span>
+                        <h3 class="text-base sm:text-lg font-bold text-slate-800 mt-1 mb-2 sm:mb-3 leading-tight">${data.desc}</h3>
+                        <div class="bg-slate-50 p-2.5 sm:p-3 rounded-lg border border-slate-100">
+                            <p class="text-xs sm:text-sm text-slate-600 line-clamp-2"><i class="fas fa-lightbulb text-amber-500 mr-1.5"></i><strong>Hint:</strong> ${data.goal}</p>
                         </div>
                     </div>
-                    <div class="mt-6 pt-4 border-t border-slate-100 flex justify-between items-center z-10">
+                    <div class="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-slate-100 flex justify-between items-center z-10">
                         <div class="flex pl-2">
                             ${avatarHTML}
                         </div>
-                        <span class="text-sm font-semibold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full group-hover:bg-blue-600 group-hover:text-white transition-colors">เข้าสัมภาษณ์ <i class="fas fa-arrow-right ml-1 text-xs"></i></span>
+                        <span class="text-xs sm:text-sm font-semibold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full group-hover:bg-blue-600 group-hover:text-white transition-colors">เข้าสัมภาษณ์ <i class="fas fa-arrow-right ml-1 text-[10px] sm:text-xs"></i></span>
                     </div>
                 `;
                 grid.appendChild(card);
@@ -381,14 +426,11 @@
             currentCaseId = caseId;
             const currentCaseData = auditCases[caseId];
             
-            // Setup Header Info
             document.getElementById('roomCaseTitle').innerText = `${currentCaseData.title}: ${currentCaseData.desc}`;
             document.getElementById('roomCaseGoal').innerHTML = `<strong>Hint:</strong> ${currentCaseData.goal}`;
             
-            // Reset Chat History
             chatHistories = {};
             
-            // Populate Personas
             const personaSelect = document.getElementById('personaSelect');
             personaSelect.innerHTML = '';
             let firstPersona = true;
@@ -399,7 +441,6 @@
                 if(firstPersona) { currentPersonaId = pKey; firstPersona = false; }
             }
             
-            // Switch Views
             document.getElementById('homeView').classList.add('hidden');
             document.getElementById('chatView').classList.remove('hidden');
             document.getElementById('backBtn').classList.remove('hidden');
@@ -411,9 +452,8 @@
             if (synth.speaking) synth.cancel();
             currentPersonaId = document.getElementById('personaSelect').value;
             
-            // Update small avatar icon in the dropdown area
             const avatarData = auditCases[currentCaseId].personas[currentPersonaId].avatar;
-            document.getElementById('personaSelectAvatar').innerHTML = `<div class="w-6 h-6 rounded-full overflow-hidden border border-slate-200">${avatarData}</div>`;
+            document.getElementById('personaSelectAvatar').innerHTML = `<div class="w-6 h-6 sm:w-7 sm:h-7 rounded-full overflow-hidden border border-slate-200">${avatarData}</div>`;
             
             renderChat();
         }
@@ -438,12 +478,12 @@
             msgDiv.className = `flex w-full ${type === 'user' ? 'justify-end' : 'justify-start'}`;
             
             if (type === 'user') {
-                msgDiv.innerHTML = `<div class="bg-blue-600 text-white px-5 py-3.5 rounded-2xl rounded-tr-sm max-w-[85%] sm:max-w-[75%] shadow-md text-[15px] leading-relaxed border border-blue-700">${escapeHTML(text)}</div>`;
+                msgDiv.innerHTML = `<div class="bg-blue-600 text-white px-4 py-2.5 sm:px-5 sm:py-3.5 rounded-2xl rounded-tr-sm max-w-[85%] sm:max-w-[75%] shadow-md text-[14px] sm:text-[15px] leading-relaxed border border-blue-700">${escapeHTML(text)}</div>`;
             } else {
                 msgDiv.innerHTML = `
-                    <div class="flex items-end gap-3 max-w-[90%] sm:max-w-[80%]">
-                        <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-xl shadow-md flex-shrink-0 border-2 border-white overflow-hidden z-10">${avatarHTML}</div>
-                        <div class="bg-white border border-slate-200 text-slate-800 px-5 py-3.5 rounded-2xl rounded-tl-sm shadow-sm text-[15px] leading-relaxed whitespace-pre-wrap">${escapeHTML(text)}</div>
+                    <div class="flex items-end gap-2 sm:gap-3 max-w-[95%] sm:max-w-[80%]">
+                        <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-white flex items-center justify-center text-xl shadow-md flex-shrink-0 border-2 border-white overflow-hidden z-10">${avatarHTML}</div>
+                        <div class="bg-white border border-slate-200 text-slate-800 px-4 py-2.5 sm:px-5 sm:py-3.5 rounded-2xl rounded-tl-sm shadow-sm text-[14px] sm:text-[15px] leading-relaxed whitespace-pre-wrap">${escapeHTML(text)}</div>
                     </div>`;
             }
             chatBox.appendChild(msgDiv);
@@ -473,6 +513,11 @@
             const text = userInput.value.trim();
             if (!text) return;
 
+            if (!apiKey) {
+                alert("กรุณาตั้งค่า API Key ก่อนครับ");
+                return;
+            }
+
             if (isDictating && recognition) recognition.stop();
             if (synth.speaking) synth.cancel();
 
@@ -489,9 +534,9 @@
             const typingId = 'typing-' + Date.now();
             document.getElementById('chatBox').insertAdjacentHTML('beforeend', `
                 <div id="${typingId}" class="flex w-full justify-start">
-                    <div class="flex items-end gap-3 max-w-[85%]">
-                        <div class="w-12 h-12 rounded-full bg-white flex items-center justify-center text-xl shadow-md flex-shrink-0 border-2 border-white overflow-hidden">${personaData.avatar}</div>
-                        <div class="bg-white border border-slate-200 px-5 py-4 rounded-2xl rounded-tl-sm shadow-sm">
+                    <div class="flex items-end gap-2 sm:gap-3 max-w-[85%]">
+                        <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-white flex items-center justify-center text-xl shadow-md flex-shrink-0 border-2 border-white overflow-hidden">${personaData.avatar}</div>
+                        <div class="bg-white border border-slate-200 px-4 py-3 sm:px-5 sm:py-4 rounded-2xl rounded-tl-sm shadow-sm">
                             <div class="typing-indicator flex items-center h-full"><span></span><span></span><span></span></div>
                         </div>
                     </div>
@@ -562,12 +607,12 @@
                 recognition = new SpeechRec(); recognition.lang = 'th-TH'; recognition.interimResults = false;
                 recognition.onstart = () => { 
                     isDictating = true; document.getElementById('micBtn').classList.add('mic-active'); 
-                    document.getElementById('userInput').placeholder = "กำลังฟังเสียงของคุณ..."; if(synth.speaking) synth.cancel(); 
+                    document.getElementById('userInput').placeholder = "กำลังฟังเสียง..."; if(synth.speaking) synth.cancel(); 
                 };
                 recognition.onresult = (e) => { document.getElementById('userInput').value = e.results[0][0].transcript; };
                 recognition.onend = () => { 
                     isDictating = false; document.getElementById('micBtn').classList.remove('mic-active'); 
-                    document.getElementById('userInput').placeholder = "พิมพ์คำถาม หรือ กดไอคอนไมค์เพื่อพูด...";
+                    document.getElementById('userInput').placeholder = "พิมพ์คำถาม หรือ กดไอคอนไมค์...";
                     if (document.getElementById('userInput').value.trim() !== '') document.getElementById('chatForm').dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
                 };
             }

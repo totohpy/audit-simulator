@@ -9,11 +9,15 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap');
         
+        /* Mobile Viewport Fix */
+        :root {
+            --app-height: 100vh;
+        }
+        
         body { 
             font-family: 'Sarabun', sans-serif; 
-            /* Mobile Viewport Fix */
-            height: 100vh; 
-            height: 100dvh; 
+            height: 100vh; /* Fallback for older browsers */
+            height: var(--app-height); /* Dynamic height updated by JS */
         }
         
         /* Safe Area padding for iOS Home Indicator */
@@ -52,7 +56,7 @@
         #apiKeyModal { backdrop-filter: blur(5px); }
     </style>
 </head>
-<body class="bg-slate-50 fixed inset-0 w-full flex flex-col overflow-hidden text-slate-800">
+<body class="bg-slate-50 w-full flex flex-col overflow-hidden text-slate-800">
 
     <!-- Header -->
     <header class="bg-white border-b border-slate-200 px-4 sm:px-6 py-3 sm:py-4 shadow-sm z-20 flex justify-between items-center relative shrink-0">
@@ -93,7 +97,7 @@
                     <span class="px-3 sm:px-4 py-1.5 bg-blue-500/20 text-blue-300 rounded-full text-xs sm:text-sm font-semibold tracking-wider border border-blue-500/30 mb-4 inline-block uppercase">Performance Audit TRAINING MODULE</span>
                     <h2 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 leading-tight">ระบบจำลองการตรวจสอบผลสัมฤทธิ์<br class="hidden sm:block">และประสิทธิภาพการดำเนินงาน</h2>
                     <p class="text-slate-300 max-w-2xl mx-auto text-sm sm:text-lg md:text-xl leading-relaxed">
-                        ฝึกฝนทักษะการตั้งคำถาม สัมภาษณ์ สังเกตการณ์ และค้นหาสาเหตุที่แท้จริง <br class="hidden sm:block">ผ่านการจำลองการสัมภาษณ์ผู้เกี่ยวข้อง
+                        ฝึกฝนทักษะการตั้งคำถาม สัมภาษณ์ สังเกตการณ์ และค้นหาสาเหตุที่แท้จริง (Root Cause)<br class="hidden sm:block">ผ่านการจำลองการสัมภาษณ์ผู้เกี่ยวข้อง
                     </p>
                 </div>
             </div>
@@ -153,8 +157,8 @@
                         <button type="button" id="micBtn" onclick="toggleDictation()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center transition-all border border-slate-200 shadow-sm flex-shrink-0" title="กดเพื่อพูด">
                             <i class="fas fa-microphone text-base sm:text-lg"></i>
                         </button>
-                        <!-- Use text-base (16px) to prevent iOS Safari auto-zoom on input -->
-                        <input type="text" id="userInput" placeholder="พิมพ์คำถาม หรือ กดไอคอนไมค์..." class="flex-1 border-2 border-slate-200 rounded-full px-4 sm:px-5 py-2 sm:py-3 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 text-base transition-all bg-slate-50 focus:bg-white" autocomplete="off">
+                        <!-- Use text-base (16px) to prevent iOS Safari auto-zoom on input and onfocus handler for keyboard popup -->
+                        <input type="text" id="userInput" onfocus="setTimeout(scrollToBottom, 300)" placeholder="พิมพ์คำถาม หรือ กดไอคอนไมค์..." class="flex-1 border-2 border-slate-200 rounded-full px-4 sm:px-5 py-2 sm:py-3 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 text-base transition-all bg-slate-50 focus:bg-white" autocomplete="off">
                         <button type="submit" id="sendBtn" class="bg-blue-600 hover:bg-blue-700 text-white rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center transition-all shadow-md shadow-blue-500/30 disabled:opacity-50 flex-shrink-0">
                             <i class="fas fa-paper-plane text-base sm:text-lg -ml-1"></i>
                         </button>
@@ -190,6 +194,16 @@
     </div>
 
     <script>
+        // ==========================================
+        // 0. MOBILE VIEWPORT HEIGHT FIX
+        // ==========================================
+        const setAppHeight = () => {
+            const doc = document.documentElement;
+            doc.style.setProperty('--app-height', `${window.innerHeight}px`);
+        };
+        window.addEventListener('resize', setAppHeight);
+        setAppHeight(); // Set initially
+
         // ==========================================
         // 1. DATABASE: รวม 5 กรณีศึกษา พร้อม Cartoon Avatars (DiceBear)
         // ==========================================
@@ -352,8 +366,9 @@
         // 2. STATE & SETUP
         // ==========================================
         // ซ่อน API Key ด้วย Base64
-        const encodedKey = "QUl6YVN5REVHbWQ5SEpucmtfd0Z2MktpUTk3Q2VER256TmRmeUtr";     
-        let apiKey = atob(encodedKey); 
+        const encodedKey = "QUl6YVN5REVHbWQ5SEpucmtfd0Z2MktpUTk3Q2VER256TmRmeUtr";
+        let apiKey = atob(encodedKey).trim(); // เพิ่ม .trim() เพื่อตัดช่องว่างหรือบรรทัดใหม่ที่แอบซ่อนอยู่
+
         let currentCaseId = null;
         let currentPersonaId = null;
         let chatHistories = {}; 
@@ -418,7 +433,11 @@
         function showHome() {
             if (synth.speaking) synth.cancel();
             document.getElementById('homeView').classList.remove('hidden');
+            
+            // To be 100% safe with flex, manually manipulate flex classes
             document.getElementById('chatView').classList.add('hidden');
+            document.getElementById('chatView').classList.remove('flex');
+            
             document.getElementById('backBtn').classList.add('hidden');
         }
 
@@ -442,7 +461,11 @@
             }
             
             document.getElementById('homeView').classList.add('hidden');
+            
+            // Safely show flex layout
             document.getElementById('chatView').classList.remove('hidden');
+            document.getElementById('chatView').classList.add('flex');
+            
             document.getElementById('backBtn').classList.remove('hidden');
             
             changePersona();
@@ -498,7 +521,17 @@
             for (let i = 0; i < retries; i++) {
                 try {
                     const response = await fetch(url, options);
-                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    if (!response.ok) {
+                        // ดึงข้อความ Error จริงๆ จาก Google ออกมาแสดง
+                        let errMsg = `HTTP error! status: ${response.status}`;
+                        try {
+                            const errData = await response.json();
+                            if (errData.error && errData.error.message) {
+                                errMsg = `${response.status} - ${errData.error.message}`;
+                            }
+                        } catch(e) {}
+                        throw new Error(errMsg);
+                    }
                     return await response.json();
                 } catch (error) {
                     if (i === retries - 1) throw error;
@@ -544,7 +577,8 @@
             scrollToBottom();
 
             try {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+                // แก้ไขชื่อโมเดลเป็น gemini-2.5-flash ตามตารางโควตา Paid Tier 1 ของคุณ
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
                 const payload = {
                     systemInstruction: { parts: [{ text: personaData.systemInstruction }] },
                     contents: chatHistories[currentPersonaId],
@@ -568,13 +602,19 @@
 
             } catch (error) {
                 document.getElementById(typingId)?.remove();
-                addMessageToUI('bot', `[ระบบขัดข้อง]: ไม่สามารถติดต่อได้ในขณะนี้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ตหรือโควตา API`, "⚠️");
+                
+                // แสดงข้อความ Error ที่ละเอียดขึ้น
+                let errorMsg = "ไม่สามารถติดต่อได้ กรุณาตรวจสอบอินเทอร์เน็ตหรือโควตา API";
+                if(error.message) errorMsg += ` (รายละเอียด: ${error.message})`;
+                
+                addMessageToUI('bot', `[ระบบขัดข้อง]: ${errorMsg}`, "⚠️");
                 chatHistories[currentPersonaId].pop();
             } finally {
                 userInput.disabled = false;
                 document.getElementById('sendBtn').disabled = false;
                 document.getElementById('micBtn').disabled = false;
                 userInput.focus();
+                scrollToBottom();
             }
         }
 

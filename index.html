@@ -489,7 +489,11 @@
             chatBox.innerHTML = '';
             
             const personaData = auditCases[currentCaseId].personas[currentPersonaId];
-            addMessageToUI('bot', personaData.greeting, personaData.avatar);
+            
+            // แสดงข้อความเริ่มต้นแทนการดึงประโยค greeting มาแสดงโดยอัตโนมัติ
+            if (chatHistories[currentPersonaId].length === 0) {
+                chatBox.innerHTML = `<div class="w-full text-center text-slate-400 text-xs sm:text-sm mt-4 mb-2 font-medium bg-slate-100 py-2 rounded-lg border border-slate-200"><i class="fas fa-microphone-alt mr-1.5"></i> ผู้ถูกสัมภาษณ์พร้อมแล้ว กรุณาเริ่มตั้งคำถาม</div>`;
+            }
             
             chatHistories[currentPersonaId].forEach(msg => {
                 const type = msg.role === 'user' ? 'user' : 'bot';
@@ -581,8 +585,10 @@
             try {
                 // ใช้ gemini-2.5-flash ตามบัญชี Paid Tier 1
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+                
+                // นำข้อมูล Greeting มาฝังในสมอง AI ให้รับรู้เป็นข้อมูลตั้งต้น (โดยไม่ปริ้นต์ลงจอเองตั้งแต่แรก)
                 const payload = {
-                    systemInstruction: { parts: [{ text: personaData.systemInstruction }] },
+                    systemInstruction: { parts: [{ text: `ข้อมูล/คำให้การเบื้องต้นของคุณ (ใช้ตอบเมื่อถูกถามกว้างๆ): "${personaData.greeting}"\n\n${personaData.systemInstruction}` }] },
                     contents: chatHistories[currentPersonaId],
                     generationConfig: { temperature: 0.5 } // ลดอุณหภูมิลงนิดหน่อยเพื่อให้ AI ไม่หลุดความลับง่ายไป
                 };

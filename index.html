@@ -55,7 +55,7 @@
         /* Animation for Big Avatar Talking */
         @keyframes talk {
             0% { transform: translateY(0) scale(1); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-            100% { transform: translateY(-6px) scale(1.03); box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.4); border-color: #bfdbfe; }
+            100% { transform: translateY(-8px) scale(1.02); box-shadow: 0 25px 30px -5px rgba(59, 130, 246, 0.4); border-color: #bfdbfe; }
         }
         .animate-talk {
             animation: talk 0.2s infinite alternate ease-in-out;
@@ -120,68 +120,85 @@
         </div>
 
         <!-- ========================================== -->
-        <!-- VIEW 2: INTERVIEW ROOM (ห้องสัมภาษณ์) -->
+        <!-- VIEW 2: INTERVIEW ROOM (ห้องสัมภาษณ์แบบ Split Screen) -->
         <!-- ========================================== -->
-        <div id="chatView" class="absolute inset-0 flex flex-col max-w-5xl w-full mx-auto p-0 sm:p-4 hidden z-10">
-            <section class="w-full h-full flex flex-col bg-white sm:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] sm:border border-slate-200 overflow-hidden">
+        <div id="chatView" class="absolute inset-0 flex flex-col max-w-7xl w-full mx-auto p-0 lg:p-4 hidden z-10">
+            <!-- ใช้ flex-col-reverse ในมือถือ (อวตารอยู่บน แชทอยู่ล่าง) และ flex-row ในคอม (แบ่งซ้ายขวา) -->
+            <section class="w-full h-full flex flex-col-reverse lg:flex-row bg-white lg:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] lg:border border-slate-200 overflow-hidden">
                 
-                <!-- Room Header -->
-                <div class="bg-white border-b border-slate-200 flex flex-col md:flex-row shadow-sm z-10 shrink-0">
-                    <!-- Case Info -->
-                    <div class="p-3 sm:p-4 flex-1 border-b md:border-b-0 md:border-r border-slate-100 bg-slate-50">
-                        <h2 id="roomCaseTitle" class="font-bold text-slate-800 text-base sm:text-lg leading-tight mb-2">ชื่อโครงการ</h2>
-                        <div class="text-xs sm:text-sm text-amber-700 flex items-start gap-2 bg-amber-50/80 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-lg border border-amber-200">
-                            <i class="fas fa-lightbulb mt-0.5 text-amber-500"></i>
-                            <span id="roomCaseGoal" class="leading-relaxed"><strong>Hint:</strong> กำลังโหลดข้อมูล...</span>
+                <!-- ฝั่งซ้าย: Chat Interface (60%) -->
+                <div class="flex-1 flex flex-col h-full lg:w-3/5 lg:border-r border-slate-200 z-20 bg-white">
+                    
+                    <!-- Room Header -->
+                    <div class="bg-white border-b border-slate-200 flex flex-col sm:flex-row shadow-sm shrink-0">
+                        <!-- Case Info -->
+                        <div class="p-3 sm:p-4 flex-1 border-b sm:border-b-0 sm:border-r border-slate-100 bg-slate-50">
+                            <h2 id="roomCaseTitle" class="font-bold text-slate-800 text-base sm:text-lg leading-tight mb-2">ชื่อโครงการ</h2>
+                            <div class="text-xs sm:text-sm text-amber-700 flex items-start gap-2 bg-amber-50/80 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-lg border border-amber-200">
+                                <i class="fas fa-lightbulb mt-0.5 text-amber-500"></i>
+                                <span id="roomCaseGoal" class="leading-relaxed"><strong>Hint:</strong> กำลังโหลดข้อมูล...</span>
+                            </div>
+                        </div>
+
+                        <!-- Persona Selector -->
+                        <div class="p-3 sm:p-4 w-full sm:w-64 flex flex-col justify-center bg-white shrink-0">
+                            <label class="block text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">กำลังสัมภาษณ์:</label>
+                            <div class="relative">
+                                <select id="personaSelect" onchange="changePersona()" class="w-full appearance-none bg-white border-2 border-slate-200 text-slate-700 py-2 sm:py-2.5 pl-10 pr-8 rounded-xl font-semibold focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 cursor-pointer transition-all shadow-sm text-sm sm:text-base">
+                                    <!-- Options -->
+                                </select>
+                                <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none" id="personaSelectAvatar">
+                                    <!-- Small Avatar Icon -->
+                                </div>
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+                                    <i class="fas fa-chevron-down text-sm"></i>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Persona Selector & Info -->
-                    <div class="p-3 sm:p-4 w-full md:w-80 flex flex-col justify-center bg-white relative shrink-0">
-                        <label class="block text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">กำลังสัมภาษณ์:</label>
-                        <div class="relative">
-                            <select id="personaSelect" onchange="changePersona()" class="w-full appearance-none bg-white border-2 border-slate-200 text-slate-700 py-2.5 sm:py-3 pl-10 sm:pl-12 pr-10 rounded-xl font-semibold focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 cursor-pointer transition-all shadow-sm text-base">
-                                <!-- Options -->
-                            </select>
-                            <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none" id="personaSelectAvatar">
-                                <!-- Small Avatar Icon -->
-                            </div>
-                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 sm:px-4 text-slate-400">
-                                <i class="fas fa-chevron-down text-sm"></i>
+                    <!-- Chat Box -->
+                    <div id="chatBox" class="flex-1 p-3 sm:p-6 overflow-y-auto chat-scroll flex flex-col gap-4 sm:gap-5 bg-slate-50/50">
+                        <!-- Chat messages -->
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="p-3 sm:p-4 bg-white border-t border-slate-200 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.03)] safe-pb shrink-0">
+                        <form id="chatForm" onsubmit="sendMessage(event)" class="flex gap-2 sm:gap-3">
+                            <button type="button" id="micBtn" onclick="toggleDictation()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center transition-all border border-slate-200 shadow-sm flex-shrink-0" title="กดเพื่อพูด">
+                                <i class="fas fa-microphone text-base sm:text-lg"></i>
+                            </button>
+                            <input type="text" id="userInput" onfocus="setTimeout(scrollToBottom, 300)" placeholder="พิมพ์คำถาม หรือ กดไอคอนไมค์..." class="flex-1 border-2 border-slate-200 rounded-full px-4 sm:px-5 py-2 sm:py-3 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 text-base transition-all bg-slate-50 focus:bg-white" autocomplete="off">
+                            <button type="submit" id="sendBtn" class="bg-blue-600 hover:bg-blue-700 text-white rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center transition-all shadow-md shadow-blue-500/30 disabled:opacity-50 flex-shrink-0">
+                                <i class="fas fa-paper-plane text-base sm:text-lg -ml-1"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- ฝั่งขวา: Virtual Avatar Stage (40%) -->
+                <div class="w-full lg:w-2/5 h-48 lg:h-full bg-slate-900 flex flex-col items-center justify-center shrink-0 relative overflow-hidden">
+                    <!-- Animated Background Elements (สไตล์ห้องสตรีมมิ่ง) -->
+                    <div class="absolute inset-0 opacity-40 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+                    <div class="absolute -top-24 -right-24 w-64 h-64 bg-blue-500 rounded-full mix-blend-overlay filter blur-[60px] opacity-40 animate-pulse"></div>
+                    <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-600 rounded-full mix-blend-overlay filter blur-[60px] opacity-30 animate-pulse" style="animation-delay: 1s;"></div>
+                    
+                    <!-- Avatar Display -->
+                    <div class="relative z-10 flex flex-col items-center mt-2 lg:mt-0">
+                        <!-- ขยายขนาดรูปในหน้าจอ Desktop ให้ใหญ่สะใจ (lg:w-56) -->
+                        <div id="bigAvatarElement" class="w-24 h-24 sm:w-28 sm:h-28 lg:w-56 lg:h-56 rounded-full border-4 lg:border-8 border-white/90 shadow-[0_0_40px_rgba(59,130,246,0.5)] bg-white transition-all duration-300 flex items-center justify-center overflow-hidden">
+                            <!-- Big Avatar Injected Here -->
+                        </div>
+                        
+                        <div class="mt-4 lg:mt-6 text-center">
+                            <h3 id="bigAvatarName" class="font-bold text-white text-base sm:text-lg lg:text-3xl drop-shadow-md tracking-wide">ชื่อผู้ให้สัมภาษณ์</h3>
+                            <div class="inline-flex items-center gap-1.5 lg:gap-2 bg-black/40 backdrop-blur-md text-emerald-400 px-3 lg:px-4 py-1 lg:py-1.5 rounded-full text-[10px] sm:text-xs lg:text-sm font-semibold mt-1.5 lg:mt-3 border border-emerald-500/30 shadow-lg">
+                                <span class="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_5px_#10b981]"></span> Avatar Ready
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Big Avatar Stage (เวทีแสดงตัวการ์ตูนใหญ่) -->
-                <div class="bg-gradient-to-b from-blue-50/60 to-white py-4 sm:py-5 flex flex-col items-center justify-center border-b border-slate-100 shrink-0 relative overflow-hidden">
-                    <div class="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/diagonal-stripes.png')]"></div>
-                    <div id="bigAvatarElement" class="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-white shadow-lg bg-white z-10 transition-all duration-200 flex items-center justify-center overflow-hidden">
-                        <!-- Big Avatar Injected Here -->
-                    </div>
-                    <h3 id="bigAvatarName" class="font-bold text-slate-800 mt-3 text-base sm:text-lg z-10 drop-shadow-sm">ชื่อผู้ให้สัมภาษณ์</h3>
-                    <div class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold mt-1.5 z-10 flex items-center gap-1.5 border border-green-200 shadow-sm">
-                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> พร้อมให้สัมภาษณ์
-                    </div>
-                </div>
-
-                <!-- Chat Box -->
-                <div id="chatBox" class="flex-1 p-3 sm:p-6 overflow-y-auto chat-scroll flex flex-col gap-4 sm:gap-5 bg-slate-50/50">
-                    <!-- Chat messages -->
-                </div>
-
-                <!-- Input Area (With safe-pb for mobile) -->
-                <div class="p-3 sm:p-4 bg-white border-t border-slate-200 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.03)] safe-pb shrink-0">
-                    <form id="chatForm" onsubmit="sendMessage(event)" class="flex gap-2 sm:gap-3">
-                        <button type="button" id="micBtn" onclick="toggleDictation()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center transition-all border border-slate-200 shadow-sm flex-shrink-0" title="กดเพื่อพูด">
-                            <i class="fas fa-microphone text-base sm:text-lg"></i>
-                        </button>
-                        <input type="text" id="userInput" onfocus="setTimeout(scrollToBottom, 300)" placeholder="พิมพ์คำถาม หรือ กดไอคอนไมค์..." class="flex-1 border-2 border-slate-200 rounded-full px-4 sm:px-5 py-2 sm:py-3 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 text-base transition-all bg-slate-50 focus:bg-white" autocomplete="off">
-                        <button type="submit" id="sendBtn" class="bg-blue-600 hover:bg-blue-700 text-white rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center transition-all shadow-md shadow-blue-500/30 disabled:opacity-50 flex-shrink-0">
-                            <i class="fas fa-paper-plane text-base sm:text-lg -ml-1"></i>
-                        </button>
-                    </form>
-                </div>
             </section>
         </div>
 
@@ -228,6 +245,14 @@
         // เปลี่ยนจากตัวการ์ตูน เป็นภาพถ่ายบุคคลเสมือนจริง (Reality Avatar)
         const getAvatar = (gender, id) => `<img src="https://randomuser.me/api/portraits/${gender}/${id}.jpg" class="w-full h-full rounded-full object-cover border-2 border-white shadow-sm" alt="avatar">`;
 
+        // กำหนด 4 โมเดลหลักตามที่ออกแบบไว้ (เตรียมพร้อมสำหรับการอัปเกรดเป็นโมเดลขยับได้ในอนาคต)
+        const models = {
+            maleOfficial: getAvatar("men", 11),    // ตัวแทน 1: เจ้าหน้าที่ชาย / นักธุรกิจ
+            maleVillager: getAvatar("men", 75),    // ตัวแทน 2: ชาวบ้านชาย / ผู้ใช้แรงงาน
+            femaleOfficial: getAvatar("women", 32), // ตัวแทน 3: เจ้าหน้าที่หญิง / พนักงานบริษัท
+            femaleVillager: getAvatar("women", 68)  // ตัวแทน 4: ชาวบ้านหญิง / ผู้นำชุมชนหญิง
+        };
+
         // กฎกลางที่บังคับใช้กับทุกคนเพื่อกัน AI ตอบยาวหรือคายความลับหมด
         const strictRule = `
 กฎเหล็กในการตอบ (บังคับใช้เด็ดขาด):
@@ -245,7 +270,7 @@
                 goal: "บ่อบาดาลถูกทิ้งร้าง น้ำขุ่น และบางแห่งมีผู้ใช้น้อยกว่าเกณฑ์",
                 personas: {
                     "ช่าง": {
-                        name: "ช่าง อปท. (ผู้ควบคุมงาน)", avatar: getAvatar("men", 32), pitch: 0.85, rate: 1.0,
+                        name: "ช่าง อปท. (ผู้ควบคุมงาน)", avatar: models.maleOfficial, pitch: 0.85, rate: 1.0,
                         greeting: "สวัสดีครับ โครงการน้ำบาดาล 100 แห่ง เราสร้างเสร็จและส่งมอบเรียบร้อยครับ มีเรื่องอะไรสอบถามครับ?",
                         systemInstruction: `คุณคือ ช่าง อปท. ผู้รับผิดชอบโครงการเจาะบาดาล งบ 500 ล้านบาท ${strictRule}
 สเต็ปการให้ข้อมูล:
@@ -254,7 +279,7 @@
 - โดนจี้เรื่องทำไมไปสร้างจุดที่น้ำขุ่น/จุดที่มีประปาอยู่แล้ว: ค่อยสารภาพความลับว่า "ความจริงเราไม่ได้ลงพื้นที่สำรวจศักยภาพชั้นหินหรือแหล่งน้ำเดิมตามหลักเกณฑ์ครับ ผู้บริหารสั่งมาให้กระจายลงพื้นที่ก็ต้องทำไปตามนั้นครับ"`
                     },
                     "ผู้รับเหมา": {
-                        name: "ผู้รับจ้างเจาะบาดาล", avatar: getAvatar("men", 46), pitch: 0.9, rate: 1.1,
+                        name: "ผู้รับจ้างเจาะบาดาล", avatar: models.maleOfficial, pitch: 0.9, rate: 1.1,
                         greeting: "ผมเจาะบาดาลมาเป็นร้อยบ่อ งานนี้สเปกท่อ 6 นิ้ว เครื่องกรองพร้อม น้ำไหลแรงทุกบ่อตอนผมส่งงานครับ!",
                         systemInstruction: `คุณคือ ผู้รับจ้างเจาะบาดาล ${strictRule}
 สเต็ปการให้ข้อมูล:
@@ -263,7 +288,7 @@
 - โดนซักว่าทำไมรู้ว่าหินไม่มีน้ำแล้วยังฝืนเจาะ: สารภาพว่า "แหมท่าน ตอนเจาะผมก็เห็นแล้วว่าชั้นหินมันอุ้มน้ำน้อย แต่มันเป็นพิกัดตามสัญญา ถ้าผมไม่เจาะให้จบก็เบิกเงินไม่ได้สิครับ"`
                     },
                     "ผู้ใหญ่บ้าน": {
-                        name: "ผู้ใหญ่บ้าน", avatar: getAvatar("men", 69), pitch: 1.1, rate: 1.0,
+                        name: "ผู้ใหญ่บ้าน", avatar: models.maleVillager, pitch: 1.1, rate: 1.0,
                         greeting: "มาตรวจก็ดีเลยคุณ! บาดาลอะไรไม่รู้ สร้างเสร็จแล้วทิ้งขว้าง หญ้ารกไปหมดแล้ว!",
                         systemInstruction: `คุณคือ ผู้ใหญ่บ้าน เป็นคนขี้บ่น ${strictRule}
 ข้อมูลที่ให้ได้:
@@ -281,7 +306,7 @@
                 goal: "ชาวบ้านไม่ใช้ถังคัดแยกขยะ และปริมาณขยะอินทรีย์ไม่ลดลง",
                 personas: {
                     "จนท": {
-                        name: "จนท. สิ่งแวดล้อม", avatar: getAvatar("women", 32), pitch: 1.2, rate: 1.0,
+                        name: "จนท. สิ่งแวดล้อม", avatar: models.femaleOfficial, pitch: 1.2, rate: 1.0,
                         greeting: "สวัสดีค่ะ ทางเราจัดหาถังคัดแยกขยะและแจกจ่ายครบ 6,000 ครัวเรือนตามเป้าหมายโครงการแล้วนะคะ",
                         systemInstruction: `คุณคือ จนท. สิ่งแวดล้อม เทศบาลเมือง B ${strictRule}
 สเต็ปการให้ข้อมูล:
@@ -290,7 +315,7 @@
 - โดนจี้เรื่องถังที่แจกเป็นแบบฝังดินแต่คนอยู่ห้องเช่า/อพาร์ตเมนต์ใช้ไม่ได้: สารภาพว่า "ทางเราเร่งจัดหาถังให้ครบจำนวนเป็นหลักค่ะ เลยไม่ได้พิจารณารูปแบบถังให้เหมาะสมกับลักษณะที่อยู่อาศัย และไม่ได้ติดตามผลหลังแจกไปแล้วค่ะ"`
                     },
                     "เซลส์": {
-                        name: "เซลส์ขายถังขยะ", avatar: getAvatar("men", 25), pitch: 1.0, rate: 1.15,
+                        name: "เซลส์ขายถังขยะ", avatar: models.maleOfficial, pitch: 1.0, rate: 1.15,
                         greeting: "บริษัทเราส่งมอบถังขยะฝังดินครบถ้วน 6,000 ใบ ตามสัญญาจัดซื้อเลยครับท่าน",
                         systemInstruction: `คุณคือ เซลส์บริษัทขายถังขยะ หัวหมอ เอาตัวรอดเก่ง ${strictRule}
 สเต็ปการให้ข้อมูล:
@@ -299,7 +324,7 @@
 - โดนจี้เรื่องสเปกถังต่ำกว่ามาตรฐาน: สารภาพว่า "ก็ทางเทศบาลมีงบจำกัดแต่อยากได้ถังตั้ง 6,000 ใบให้ครบเป้าหมาย ผมก็เลยต้องหาถังเกรดพลาสติกบางลงมาหน่อยเพื่อให้ราคาอยู่ในงบไงครับ"`
                     },
                     "ชาวบ้าน": {
-                        name: "แม่บ้าน (ชาวบ้าน)", avatar: getAvatar("women", 68), pitch: 1.4, rate: 1.1,
+                        name: "แม่บ้าน (ชาวบ้าน)", avatar: models.femaleVillager, pitch: 1.4, rate: 1.1,
                         greeting: "ถังขยะอะไรคะ ป้าไม่เห็นรู้วิธีใช้เลย แตกก็ง่าย แจกมาก็วางกองทิ้งไว้แบบนั้นแหละ!",
                         systemInstruction: `คุณคือ แม่บ้าน ชาวบ้านในพื้นที่ ${strictRule}
 ข้อมูลที่ให้ได้:
@@ -317,7 +342,7 @@
                 goal: "จุดจอดรถไม่มีผู้ใช้งาน ห้องน้ำชำรุด และไม่ปลอดภัย",
                 personas: {
                     "ผอ": {
-                        name: "ผอ. แขวงทางหลวง", avatar: getAvatar("men", 14), pitch: 0.8, rate: 1.0,
+                        name: "ผอ. แขวงทางหลวง", avatar: models.maleOfficial, pitch: 0.8, rate: 1.0,
                         greeting: "จุดพักรถเราดำเนินการก่อสร้างตามแบบมาตรฐานของกรมทางหลวงครับ มีพื้นที่จอดรถและห้องน้ำพร้อมให้บริการ",
                         systemInstruction: `คุณคือ ผอ. แขวงทางหลวง ผู้ดูแลโครงการ ${strictRule}
 สเต็ปการให้ข้อมูล:
@@ -326,7 +351,7 @@
 - โดนจี้เรื่องทำไมทางเข้าแคบ เลี้ยวยาก อยู่ไกลถนนหลัก: สารภาพความลับ "เพื่อความประหยัดงบเวนคืนที่ดินครับ เราเลยเลือกใช้ที่ดินราชการเดิมที่รกร้าง โดยไม่ได้คำนึงว่าทางเข้ามันแคบเกินไปสำหรับรถบรรทุกพ่วงครับ"`
                     },
                     "ผู้รับเหมา": {
-                        name: "ผู้รับเหมาก่อสร้าง", avatar: getAvatar("men", 54), pitch: 0.95, rate: 1.05,
+                        name: "ผู้รับเหมาก่อสร้าง", avatar: models.maleOfficial, pitch: 0.95, rate: 1.05,
                         greeting: "สวัสดีครับ ห้องน้ำกับศาลาพักรถ ผมใช้วัสดุก่อสร้างเกรด A ตามแบบมาตรฐานสำนักออกแบบเป๊ะเลยครับ",
                         systemInstruction: `คุณคือ ผู้รับเหมาก่อสร้าง ${strictRule}
 สเต็ปการให้ข้อมูล:
@@ -335,7 +360,7 @@
 - โดนซักต่อว่าตอนสร้างไม่รู้หรือว่ารถมันจะเข้าไม่ได้: ยอมรับว่า "ก็พอรู้ครับตอนเอาเครื่องจักรเข้าไปหน้างานมันแคบจริง แต่ผมไม่มีอำนาจไปสั่งเปลี่ยนสถานที่ก่อสร้างของราชการได้นี่ครับ"`
                     },
                     "คนขับ": {
-                        name: "คนขับรถบรรทุก", avatar: getAvatar("men", 75), pitch: 0.9, rate: 1.0,
+                        name: "คนขับรถบรรทุก", avatar: models.maleVillager, pitch: 0.9, rate: 1.0,
                         greeting: "ใครจะไปจอดครับพี่จุดพักรถแบบนั้น จอดปั๊มน้ำมันทั่วไปยังดีกว่าเยอะ!",
                         systemInstruction: `คุณคือ คนขับรถบรรทุกสิบล้อ/รถพ่วง ${strictRule}
 ข้อมูลที่ให้ได้:
@@ -353,7 +378,7 @@
                 goal: "แจกจ่ายปัจจัยการผลิตล่าช้า และจุดรับของไกลเกิน 80 กม.",
                 personas: {
                     "ผู้รับผิดชอบ": {
-                        name: "ผู้รับผิดชอบโครงการ", avatar: getAvatar("men", 42), pitch: 0.95, rate: 1.0,
+                        name: "ผู้รับผิดชอบโครงการ", avatar: models.maleOfficial, pitch: 0.95, rate: 1.0,
                         greeting: "มหาวิทยาลัยของเรามุ่งมั่นสนับสนุนปัจจัยการผลิตเพื่อฟื้นฟูเศรษฐกิจฐานรากตามนโยบายรัฐครับ",
                         systemInstruction: `คุณคือ อาจารย์ผู้รับผิดชอบโครงการ มหาวิทยาลัย A ${strictRule}
 สเต็ปการให้ข้อมูล:
@@ -362,7 +387,7 @@
 - โดนจี้เรื่องทำไมบริษัทส่งไม่ทัน หรือทำไมนัดล่วงหน้าไม่ถึง 5 วัน: สารภาพว่า "ผู้บริหารขาดการกำกับติดตามลูกน้องครับ และเราไปทำสัญญาจัดซื้อจากบริษัทที่มีที่ตั้งแค่ในภาคอีสานที่เดียว ทำให้เขากระจายของไปทั่วประเทศไม่ทัน และหาจุดนัดรับของที่ใกล้กว่า 80 กม. ให้ไม่ได้ครับ"`
                     },
                     "บริษัท": {
-                        name: "บริษัทคู่ค้า (ซัพพลายเออร์)", avatar: getAvatar("women", 29), pitch: 1.0, rate: 1.1,
+                        name: "บริษัทคู่ค้า (ซัพพลายเออร์)", avatar: models.femaleOfficial, pitch: 1.0, rate: 1.1,
                         greeting: "บริษัทเราเตรียมของไว้ครบถ้วนครับ แต่ให้ส่งให้ชาวบ้านตั้ง 35,000 รายทั่วประเทศมันงานช้างนะครับ",
                         systemInstruction: `คุณคือ บริษัทคู่ค้าที่ขายปัจจัยการผลิต ${strictRule}
 สเต็ปการให้ข้อมูล:
@@ -371,7 +396,7 @@
 - โดนจี้เรื่องทำไมรับงานถ้าส่งไม่ทัน: สารภาพว่า "ฐานการผลิตของบริษัทเราอยู่แค่ในภาคอีสานครับ แต่ทาง มหาวิทยาลัย A สั่งให้เราส่งกระจายทั่วประเทศ มันเลยเกินกำลัง พอขนส่งไกลๆ ปุ๋ยก็ค้างสต๊อกจนแข็ง ปลาในถุงก็ออกซิเจนหมดตายระหว่างทางครับ"`
                     },
                     "วิสาหกิจชุมชน": {
-                        name: "ตัวแทนวิสาหกิจชุมชน", avatar: getAvatar("men", 82), pitch: 0.85, rate: 0.9,
+                        name: "ตัวแทนวิสาหกิจชุมชน", avatar: models.maleVillager, pitch: 0.85, rate: 0.9,
                         greeting: "นึกจะนัดก็แจ้งล่วงหน้าแค่วันสองวัน ใครจะไปเตรียมหารถกระบะไปขนของทันล่ะครับอาจารย์!",
                         systemInstruction: `คุณคือ ตัวแทนกลุ่มวิสาหกิจชุมชน/ชาวนา ${strictRule}
 ข้อมูลที่ให้ได้:
@@ -389,7 +414,7 @@
                 goal: "โคมไฟดับเร็ว ติดตั้งซ้ำซ้อน และขาดการบำรุงรักษา",
                 personas: {
                     "สมหมาย": {
-                        name: "เจ้าหน้าที่ อปท. (สมหมาย)", avatar: getAvatar("men", 36), pitch: 0.8, rate: 1.0,
+                        name: "เจ้าหน้าที่ อปท. (สมหมาย)", avatar: models.maleOfficial, pitch: 0.8, rate: 1.0,
                         greeting: "สวัสดีครับ โคมไฟ 200 ชุดในพื้นที่ใช้งานได้ดีครับ มีประเด็นอะไรให้ผมชี้แจงสอบถามได้เลยครับ",
                         systemInstruction: `คุณคือ สมหมาย จนท. อปท. ${strictRule}
 สเต็ปการให้ข้อมูล:
@@ -398,7 +423,7 @@
 - โดนจี้เรื่องทำไมเห็นว่าติดใต้ต้นไม้/ติดซ้ำซ้อนแล้วไม่สั่งย้าย: สารภาพความลับ "ผมเห็นแล้วครับว่ามันไม่เหมาะสม แต่ผมไม่กล้าสั่งย้ายจุดเองครับ เพราะผมขาดความรู้เรื่องระเบียบการบริหารพัสดุ กลัวทำผิดขั้นตอนแล้วจะโดนสอบครับ"`
                     },
                     "เสี่ยชัย": {
-                        name: "ผู้รับจ้าง (เสี่ยชัย)", avatar: getAvatar("men", 50), pitch: 1.0, rate: 1.15,
+                        name: "ผู้รับจ้าง (เสี่ยชัย)", avatar: models.maleOfficial, pitch: 1.0, rate: 1.15,
                         greeting: "สวัสดีครับท่าน! บริษัทผมรับงานติดตั้งโคมไฟ All in One มาตรฐานบัญชีนวัตกรรม ครบถ้วนตามสัญญาครับ!",
                         systemInstruction: `คุณคือ เสี่ยชัย ผู้รับจ้าง ${strictRule}
 สเต็ปการให้ข้อมูล:
@@ -407,7 +432,7 @@
 - โดนจี้เรื่องทำไมตอนมาติดถึงเอาไปตั้งใต้ต้นไม้ หรือตั้งใกล้ไฟหลวง: สารภาพว่า "ก่อนติดตั้ง ไม่มีการลงพื้นที่สำรวจกายภาพร่วมกับหน่วยงานรัฐเลยครับ ทางราชการให้พิกัดกระดาษมายังไง ลูกน้องผมก็ไปขุดหลุมติดตรงนั้นแหละครับ ไม่กล้าเปลี่ยนเอง"`
                     },
                     "ป้าศรี": {
-                        name: "ผู้นำชุมชน (ป้าศรี)", avatar: getAvatar("women", 76), pitch: 1.3, rate: 1.05,
+                        name: "ผู้นำชุมชน (ป้าศรี)", avatar: models.femaleVillager, pitch: 1.3, rate: 1.05,
                         greeting: "มาตรวจสักทีนะคะ! โคมไฟอะไรไม่รู้ ชาวบ้านบ่นกันอุบเลยค่ะ ลองไปดูตรงท้ายซอยสิคะ!",
                         systemInstruction: `คุณคือ ป้าศรี ผู้นำชุมชน ${strictRule}
 ข้อมูลที่ให้ได้:

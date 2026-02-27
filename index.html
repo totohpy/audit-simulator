@@ -55,11 +55,14 @@
         /* Animation for Big Avatar Talking */
         @keyframes talk {
             0% { transform: translateY(0) scale(1); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
-            100% { transform: translateY(-8px) scale(1.02); box-shadow: 0 25px 30px -5px rgba(59, 130, 246, 0.4); border-color: #bfdbfe; }
+            100% { transform: translateY(-6px) scale(1.03); box-shadow: 0 20px 25px -5px rgba(59, 130, 246, 0.4); border-color: #bfdbfe; }
         }
         .animate-talk {
             animation: talk 0.2s infinite alternate ease-in-out;
         }
+
+        /* API Key Modal Styles */
+        #apiKeyModal { backdrop-filter: blur(5px); }
     </style>
 </head>
 <body class="bg-slate-50 w-full flex flex-col overflow-hidden text-slate-800">
@@ -117,150 +120,313 @@
         </div>
 
         <!-- ========================================== -->
-        <!-- VIEW 2: INTERVIEW ROOM (ห้องสัมภาษณ์แบบ Split Screen 70:30) -->
+        <!-- VIEW 2: INTERVIEW ROOM (ห้องสัมภาษณ์) -->
         <!-- ========================================== -->
-        <div id="chatView" class="absolute inset-0 flex flex-col max-w-7xl w-full mx-auto p-0 lg:p-4 hidden z-10">
-            <!-- ใช้ flex-col-reverse ในมือถือ (อวตารอยู่บน แชทอยู่ล่าง) และ flex-row ในคอม (แบ่งซ้ายขวา) -->
-            <section class="w-full h-full flex flex-col-reverse lg:flex-row bg-white lg:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] lg:border border-slate-200 overflow-hidden">
+        <div id="chatView" class="absolute inset-0 flex flex-col max-w-5xl w-full mx-auto p-0 sm:p-4 hidden z-10">
+            <section class="w-full h-full flex flex-col bg-white sm:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] sm:border border-slate-200 overflow-hidden">
                 
-                <!-- ฝั่งซ้าย: Chat Interface (70%) -->
-                <div class="flex-1 flex flex-col h-full lg:w-[70%] lg:border-r border-slate-200 z-20 bg-white">
-                    <div class="bg-white border-b border-slate-200 flex flex-col sm:flex-row shadow-sm shrink-0">
-                        <div class="p-3 sm:p-4 flex-1 border-b sm:border-b-0 sm:border-r border-slate-100 bg-slate-50">
-                            <h2 id="roomCaseTitle" class="font-bold text-slate-800 text-base sm:text-lg leading-tight mb-2">ชื่อโครงการ</h2>
-                            <div class="text-xs sm:text-sm text-amber-700 flex items-start gap-2 bg-amber-50/80 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-lg border border-amber-200">
-                                <i class="fas fa-lightbulb mt-0.5 text-amber-500"></i>
-                                <span id="roomCaseGoal" class="leading-relaxed"><strong>Hint:</strong> กำลังโหลดข้อมูล...</span>
+                <!-- Room Header -->
+                <div class="bg-white border-b border-slate-200 flex flex-col md:flex-row shadow-sm z-10 shrink-0">
+                    <!-- Case Info -->
+                    <div class="p-3 sm:p-4 flex-1 border-b md:border-b-0 md:border-r border-slate-100 bg-slate-50">
+                        <h2 id="roomCaseTitle" class="font-bold text-slate-800 text-base sm:text-lg leading-tight mb-2">ชื่อโครงการ</h2>
+                        <div class="text-xs sm:text-sm text-amber-700 flex items-start gap-2 bg-amber-50/80 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-lg border border-amber-200">
+                            <i class="fas fa-lightbulb mt-0.5 text-amber-500"></i>
+                            <span id="roomCaseGoal" class="leading-relaxed"><strong>Hint:</strong> กำลังโหลดข้อมูล...</span>
+                        </div>
+                    </div>
+
+                    <!-- Persona Selector & Info -->
+                    <div class="p-3 sm:p-4 w-full md:w-80 flex flex-col justify-center bg-white relative shrink-0">
+                        <label class="block text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">กำลังสัมภาษณ์:</label>
+                        <div class="relative">
+                            <select id="personaSelect" onchange="changePersona()" class="w-full appearance-none bg-white border-2 border-slate-200 text-slate-700 py-2.5 sm:py-3 pl-10 sm:pl-12 pr-10 rounded-xl font-semibold focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 cursor-pointer transition-all shadow-sm text-base">
+                                <!-- Options -->
+                            </select>
+                            <div class="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none" id="personaSelectAvatar">
+                                <!-- Small Avatar Icon -->
                             </div>
-                        </div>
-
-                        <!-- Persona Selector -->
-                        <div class="p-3 sm:p-4 w-full sm:w-64 flex flex-col justify-center bg-white shrink-0">
-                            <label class="block text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 sm:mb-2">กำลังสัมภาษณ์:</label>
-                            <div class="relative">
-                                <select id="personaSelect" onchange="changePersona()" class="w-full appearance-none bg-white border-2 border-slate-200 text-slate-700 py-2 sm:py-2.5 pl-10 pr-8 rounded-xl font-semibold focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 cursor-pointer transition-all shadow-sm text-sm sm:text-base">
-                                    <!-- Options -->
-                                </select>
-                                <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none" id="personaSelectAvatar">
-                                    <!-- Small Avatar Icon -->
-                                </div>
-                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
-                                    <i class="fas fa-chevron-down text-sm"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="chatBox" class="flex-1 p-3 sm:p-6 overflow-y-auto chat-scroll flex flex-col gap-4 sm:gap-5 bg-slate-50/50">
-                        <!-- Chat messages -->
-                    </div>
-
-                    <div class="p-3 sm:p-4 bg-white border-t border-slate-200 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.03)] safe-pb shrink-0">
-                        <form id="chatForm" onsubmit="sendMessage(event)" class="flex gap-2 sm:gap-3">
-                            <button type="button" id="micBtn" onclick="toggleDictation()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center transition-all border border-slate-200 shadow-sm flex-shrink-0" title="กดเพื่อพูด">
-                                <i class="fas fa-microphone text-base sm:text-lg"></i>
-                            </button>
-                            <input type="text" id="userInput" onfocus="setTimeout(scrollToBottom, 300)" placeholder="พิมพ์คำถาม หรือ กดไอคอนไมค์..." class="flex-1 border-2 border-slate-200 rounded-full px-4 sm:px-5 py-2 sm:py-3 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 text-base transition-all bg-slate-50 focus:bg-white" autocomplete="off">
-                            <button type="submit" id="sendBtn" class="bg-blue-600 hover:bg-blue-700 text-white rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center transition-all shadow-md shadow-blue-500/30 disabled:opacity-50 flex-shrink-0">
-                                <i class="fas fa-paper-plane text-base sm:text-lg -ml-1"></i>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- ฝั่งขวา: Virtual Avatar Stage (30%) -->
-                <div class="w-full lg:w-[30%] h-48 lg:h-full bg-slate-900 flex flex-col items-center justify-center shrink-0 relative overflow-hidden">
-                    <div class="absolute inset-0 opacity-40 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-                    <div class="absolute -top-24 -right-24 w-64 h-64 bg-blue-500 rounded-full mix-blend-overlay filter blur-[60px] opacity-30 animate-pulse"></div>
-                    <div class="absolute -bottom-24 -left-24 w-64 h-64 bg-indigo-600 rounded-full mix-blend-overlay filter blur-[60px] opacity-20 animate-pulse" style="animation-delay: 1s;"></div>
-                    
-                    <!-- Avatar Display -->
-                    <div class="relative z-10 flex flex-col items-center mt-2 lg:mt-0">
-                        <div id="bigAvatarElement" class="w-24 h-24 sm:w-28 sm:h-28 lg:w-48 lg:h-48 rounded-full border-4 lg:border-8 border-white/90 shadow-[0_0_40px_rgba(59,130,246,0.5)] bg-white transition-all duration-300 flex items-center justify-center overflow-hidden">
-                            <!-- Big Avatar Injected Here -->
-                        </div>
-                        
-                        <div class="mt-4 lg:mt-6 text-center">
-                            <h3 id="bigAvatarName" class="font-bold text-white text-base sm:text-lg lg:text-2xl drop-shadow-md tracking-wide">ชื่อผู้ให้สัมภาษณ์</h3>
-                            <div class="inline-flex items-center gap-1.5 lg:gap-2 bg-black/40 backdrop-blur-md text-emerald-400 px-3 lg:px-4 py-1 lg:py-1.5 rounded-full text-[10px] sm:text-xs lg:text-sm font-semibold mt-1.5 lg:mt-3 border border-emerald-500/30 shadow-lg">
-                                <span class="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_5px_#10b981]"></span> 2D Avatar Ready
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 sm:px-4 text-slate-400">
+                                <i class="fas fa-chevron-down text-sm"></i>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- Big Avatar Stage (เวทีแสดงตัวการ์ตูนใหญ่) -->
+                <div class="bg-gradient-to-b from-blue-50/60 to-white py-4 sm:py-5 flex flex-col items-center justify-center border-b border-slate-100 shrink-0 relative overflow-hidden">
+                    <div class="absolute inset-0 opacity-30 bg-[url('https://www.transparenttextures.com/patterns/diagonal-stripes.png')]"></div>
+                    <div id="bigAvatarElement" class="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-white shadow-lg bg-white z-10 transition-all duration-200 flex items-center justify-center overflow-hidden">
+                        <!-- Big Avatar Injected Here -->
+                    </div>
+                    <h3 id="bigAvatarName" class="font-bold text-slate-800 mt-3 text-base sm:text-lg z-10 drop-shadow-sm">ชื่อผู้ให้สัมภาษณ์</h3>
+                    <div class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold mt-1.5 z-10 flex items-center gap-1.5 border border-green-200 shadow-sm">
+                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> พร้อมให้สัมภาษณ์
+                    </div>
+                </div>
+
+                <!-- Chat Box -->
+                <div id="chatBox" class="flex-1 p-3 sm:p-6 overflow-y-auto chat-scroll flex flex-col gap-4 sm:gap-5 bg-slate-50/50">
+                    <!-- Chat messages -->
+                </div>
+
+                <!-- Input Area (With safe-pb for mobile) -->
+                <div class="p-3 sm:p-4 bg-white border-t border-slate-200 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.03)] safe-pb shrink-0">
+                    <form id="chatForm" onsubmit="sendMessage(event)" class="flex gap-2 sm:gap-3">
+                        <button type="button" id="micBtn" onclick="toggleDictation()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center transition-all border border-slate-200 shadow-sm flex-shrink-0" title="กดเพื่อพูด">
+                            <i class="fas fa-microphone text-base sm:text-lg"></i>
+                        </button>
+                        <input type="text" id="userInput" onfocus="setTimeout(scrollToBottom, 300)" placeholder="พิมพ์คำถาม หรือ กดไอคอนไมค์..." class="flex-1 border-2 border-slate-200 rounded-full px-4 sm:px-5 py-2 sm:py-3 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 text-base transition-all bg-slate-50 focus:bg-white" autocomplete="off">
+                        <button type="submit" id="sendBtn" class="bg-blue-600 hover:bg-blue-700 text-white rounded-full w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center transition-all shadow-md shadow-blue-500/30 disabled:opacity-50 flex-shrink-0">
+                            <i class="fas fa-paper-plane text-base sm:text-lg -ml-1"></i>
+                        </button>
+                    </form>
+                </div>
             </section>
         </div>
 
     </main>
 
-    <!-- UI Logic Script -->
+    <!-- API Key Modal -->
+    <div id="apiKeyModal" class="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300 px-4">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-md w-full transform scale-95 transition-transform duration-300" id="apiKeyModalContent">
+            <div class="text-center mb-5 sm:mb-6">
+                <div class="w-14 h-14 sm:w-16 sm:h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl sm:text-2xl mx-auto mb-4">
+                    <i class="fas fa-key"></i>
+                </div>
+                <h3 class="text-xl sm:text-2xl font-bold text-slate-800">ตั้งค่า Google Gemini API Key</h3>
+                <p class="text-slate-500 mt-2 text-xs sm:text-sm">กรุณากรอก API Key ของคุณเพื่อเริ่มใช้งานระบบจำลองการสัมภาษณ์</p>
+            </div>
+            
+            <div class="mb-5 sm:mb-6">
+                <!-- Use text-base to prevent zoom -->
+                <input type="password" id="apiKeyInput" placeholder="AIzaSy..." class="w-full border-2 border-slate-200 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all font-mono text-base" autocomplete="off">
+                <p class="text-[11px] sm:text-xs text-slate-400 mt-2 text-center">API Key ของคุณจะถูกเก็บไว้ในเบราว์เซอร์นี้เท่านั้น (ไม่ส่งไปที่เซิร์ฟเวอร์อื่น)</p>
+            </div>
+            
+            <div class="flex gap-2 sm:gap-3">
+                <button onclick="hideApiKeyModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl transition-colors text-sm sm:text-base">ยกเลิก</button>
+                <button onclick="saveApiKey()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl shadow-md shadow-blue-500/30 transition-colors text-sm sm:text-base">บันทึก & ใช้งาน</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        const setAppHeight = () => document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`);
+        // ==========================================
+        // 0. MOBILE VIEWPORT HEIGHT FIX
+        // ==========================================
+        const setAppHeight = () => {
+            const doc = document.documentElement;
+            doc.style.setProperty('--app-height', `${window.innerHeight}px`);
+        };
         window.addEventListener('resize', setAppHeight);
         setAppHeight(); 
 
-        // กลับมาใช้อวตาร 2D แบบ 15 ตัวละคร (DiceBear)
-        const getAvatar = (seed, bg) => `<img src="https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&backgroundColor=${bg}" class="w-full h-full rounded-full object-cover" alt="${seed}">`;
+        // ==========================================
+        // 1. DATABASE: รวม 5 กรณีศึกษา (Prompt Engineering อัปเดตใหม่)
+        // ==========================================
+        // เปลี่ยนจากตัวการ์ตูน เป็นภาพถ่ายบุคคลเสมือนจริง (Reality Avatar)
+        const getAvatar = (gender, id) => `<img src="https://randomuser.me/api/portraits/${gender}/${id}.jpg" class="w-full h-full rounded-full object-cover border-2 border-white shadow-sm" alt="avatar">`;
 
+        // กฎกลางที่บังคับใช้กับทุกคนเพื่อกัน AI ตอบยาวหรือคายความลับหมด
         const strictRule = `
 กฎเหล็กในการตอบ (บังคับใช้เด็ดขาด):
-1. หากผู้ตรวจพิมพ์แค่คำทักทาย (เช่น "สวัสดี", "เป็นไงบ้าง") ให้กล่าวทักทายตอบแบบคนปกติสั้นๆ เท่านั้น ห้ามรายงานความคืบหน้าโครงการก่อน
-2. ตอบให้เป็นธรรมชาติของมนุษย์ สั้น กระชับ ครั้งละไม่เกิน 2 ประโยค ห้ามร่ายยาว
-3. ห้ามคายสาเหตุที่แท้จริงทั้งหมดในคำตอบเดียว ต้องให้ผู้ตรวจถามจี้หรือเอาหลักฐานมาซักค้านก่อน`;
+1. หากผู้ตรวจพิมพ์แค่คำทักทาย (เช่น "สวัสดี", "เป็นไงบ้าง") ให้กล่าวทักทายตอบแบบคนปกติสั้นๆ เท่านั้น (เช่น "สวัสดีครับ/ค่ะ มีธุระอะไรให้รับใช้ครับ") **ห้ามรายงานความคืบหน้า ห้ามพูดถึงรายละเอียดโครงการ หรือบอกตัวเลขใดๆ ออกมาก่อนเด็ดขาด จนกว่าจะถูกถามเข้าเรื่อง**
+2. ตอบให้เป็นธรรมชาติของมนุษย์ สั้น กระชับ ครั้งละไม่เกิน 2 ประโยค ห้ามร่ายยาวหรือจัดเป็นข้อๆ
+3. ห้ามคายสาเหตุที่แท้จริงทั้งหมดในคำตอบเดียว ต้องให้ผู้ตรวจถามจี้หรือเอาหลักฐานมาซักค้านก่อนถึงจะยอมบอกทีละประเด็น
+4. ถ้าเริ่มถามถึงโครงการกว้างๆ ให้ตอบปัดๆ ไปก่อนว่าไม่มีปัญหา หรือทำตามขั้นตอนแล้ว`;
 
         const auditCases = {
             "case1": {
-                icon: "fas fa-tint text-cyan-600", color: "bg-cyan-100", borderColor: "border-cyan-200",
-                title: "กรณีศึกษาที่ 1", desc: "โครงการพัฒนาน้ำบาดาลเพื่อชุมชน", goal: "บ่อบาดาลถูกทิ้งร้าง น้ำขุ่น และบางแห่งมีผู้ใช้น้อยกว่าเกณฑ์",
+                icon: "fas fa-tint text-cyan-600",
+                color: "bg-cyan-100", borderColor: "border-cyan-200",
+                title: "กรณีศึกษาที่ 1",
+                desc: "โครงการพัฒนาน้ำบาดาลเพื่อชุมชน",
+                goal: "บ่อบาดาลถูกทิ้งร้าง น้ำขุ่น และบางแห่งมีผู้ใช้น้อยกว่าเกณฑ์",
                 personas: {
-                    "ช่าง": { name: "ช่าง อปท. (ผู้ควบคุมงาน)", avatar: getAvatar("Felix", "b6e3f4"), pitch: 0.85, rate: 1.0, greeting: "สวัสดีครับ โครงการน้ำบาดาล 100 แห่ง เราสร้างเสร็จและส่งมอบเรียบร้อยครับ มีเรื่องอะไรสอบถามครับ?", systemInstruction: `คุณคือ ช่าง อปท. ผู้รับผิดชอบโครงการเจาะบาดาล งบ 500 ล้านบาท ${strictRule}\nสเต็ปการให้ข้อมูล:\n- ถามทั่วไป: บอกว่าสร้างเสร็จตามสเปก ใช้งานได้ดีตอนส่งมอบ\n- โดนถามเรื่องชาวบ้านไม่ใช้ บ่อทิ้งร้าง หรือน้ำขุ่น: โยนความผิดว่า "ชาวบ้านไม่ยอมรวมกลุ่มกันดูแลเอง และ อปท. ก็ไม่มีงบไปตามซ่อมบำรุงให้ตลอดครับ"\n- โดนจี้เรื่องทำไมไปสร้างจุดที่น้ำขุ่น/จุดที่มีประปาอยู่แล้ว: ค่อยสารภาพความลับว่า "ความจริงเราไม่ได้ลงพื้นที่สำรวจศักยภาพชั้นหินหรือแหล่งน้ำเดิมตามหลักเกณฑ์ครับ ผู้บริหารสั่งมาให้กระจายลงพื้นที่ก็ต้องทำไปตามนั้นครับ"` },
-                    "ผู้รับเหมา": { name: "ผู้รับจ้างเจาะบาดาล", avatar: getAvatar("Jack", "ffdfbf"), pitch: 0.9, rate: 1.1, greeting: "ผมเจาะบาดาลมาเป็นร้อยบ่อ งานนี้สเปกท่อ 6 นิ้ว เครื่องกรองพร้อม น้ำไหลแรงทุกบ่อตอนผมส่งงานครับ!", systemInstruction: `คุณคือ ผู้รับจ้างเจาะบาดาล ${strictRule}\nสเต็ปการให้ข้อมูล:\n- ถามทั่วไป: อวดว่างานตัวเองดี ทำตามแบบราชการเป๊ะๆ\n- โดนถามเรื่องน้ำขุ่น หรือบ่อแห้ง: ปัดความรับผิดชอบว่า "ผมเจาะตามพิกัดที่ราชการชี้ให้เป๊ะเลยครับ ส่วนที่น้ำขุ่นเพราะ อปท. ไม่ดูแลรักษาระบบกรองสนิมเหล็กเองต่างหาก"\n- โดนซักว่าทำไมรู้ว่าหินไม่มีน้ำแล้วยังฝืนเจาะ: สารภาพว่า "แหมท่าน ตอนเจาะผมก็เห็นแล้วว่าชั้นหินมันอุ้มน้ำน้อย แต่มันเป็นพิกัดตามสัญญา ถ้าผมไม่เจาะให้จบก็เบิกเงินไม่ได้สิครับ"` },
-                    "ผู้ใหญ่บ้าน": { name: "ผู้ใหญ่บ้าน", avatar: getAvatar("Oliver", "c0aede"), pitch: 1.1, rate: 1.0, greeting: "มาตรวจก็ดีเลยคุณ! บาดาลอะไรไม่รู้ สร้างเสร็จแล้วทิ้งขว้าง หญ้ารกไปหมดแล้ว!", systemInstruction: `คุณคือ ผู้ใหญ่บ้าน เป็นคนขี้บ่น ${strictRule}\nข้อมูลที่ให้ได้:\n- บ่อบาดาลในหมู่บ้านทิ้งร้างไป 6 แห่ง หญ้าขึ้นรกหมดแล้ว ไม่ได้ประโยชน์อะไรเลย\n- ถ้าน้ำไหล น้ำก็ขุ่นเหลืองมีตะกอนสีส้มปน กินไม่ได้\n- ตั้งแต่สร้างเสร็จ ไม่เคยมีเจ้าหน้าที่มาเหลียวแล หรือมาช่วยตั้งกรรมการหมู่บ้านดูแลเลย ปล่อยตามยถากรรม` }
+                    "ช่าง": {
+                        name: "ช่าง อปท. (ผู้ควบคุมงาน)", avatar: getAvatar("men", 32), pitch: 0.85, rate: 1.0,
+                        greeting: "สวัสดีครับ โครงการน้ำบาดาล 100 แห่ง เราสร้างเสร็จและส่งมอบเรียบร้อยครับ มีเรื่องอะไรสอบถามครับ?",
+                        systemInstruction: `คุณคือ ช่าง อปท. ผู้รับผิดชอบโครงการเจาะบาดาล งบ 500 ล้านบาท ${strictRule}
+สเต็ปการให้ข้อมูล:
+- ถามทั่วไป: บอกว่าสร้างเสร็จตามสเปก ใช้งานได้ดีตอนส่งมอบ
+- โดนถามเรื่องชาวบ้านไม่ใช้ บ่อทิ้งร้าง หรือน้ำขุ่น: โยนความผิดว่า "ชาวบ้านไม่ยอมรวมกลุ่มกันดูแลเอง และ อปท. ก็ไม่มีงบไปตามซ่อมบำรุงให้ตลอดครับ"
+- โดนจี้เรื่องทำไมไปสร้างจุดที่น้ำขุ่น/จุดที่มีประปาอยู่แล้ว: ค่อยสารภาพความลับว่า "ความจริงเราไม่ได้ลงพื้นที่สำรวจศักยภาพชั้นหินหรือแหล่งน้ำเดิมตามหลักเกณฑ์ครับ ผู้บริหารสั่งมาให้กระจายลงพื้นที่ก็ต้องทำไปตามนั้นครับ"`
+                    },
+                    "ผู้รับเหมา": {
+                        name: "ผู้รับจ้างเจาะบาดาล", avatar: getAvatar("men", 46), pitch: 0.9, rate: 1.1,
+                        greeting: "ผมเจาะบาดาลมาเป็นร้อยบ่อ งานนี้สเปกท่อ 6 นิ้ว เครื่องกรองพร้อม น้ำไหลแรงทุกบ่อตอนผมส่งงานครับ!",
+                        systemInstruction: `คุณคือ ผู้รับจ้างเจาะบาดาล ${strictRule}
+สเต็ปการให้ข้อมูล:
+- ถามทั่วไป: อวดว่างานตัวเองดี ทำตามแบบราชการเป๊ะๆ
+- โดนถามเรื่องน้ำขุ่น หรือบ่อแห้ง: ปัดความรับผิดชอบว่า "ผมเจาะตามพิกัดที่ราชการชี้ให้เป๊ะเลยครับ ส่วนที่น้ำขุ่นเพราะ อปท. ไม่ดูแลรักษาระบบกรองสนิมเหล็กเองต่างหาก"
+- โดนซักว่าทำไมรู้ว่าหินไม่มีน้ำแล้วยังฝืนเจาะ: สารภาพว่า "แหมท่าน ตอนเจาะผมก็เห็นแล้วว่าชั้นหินมันอุ้มน้ำน้อย แต่มันเป็นพิกัดตามสัญญา ถ้าผมไม่เจาะให้จบก็เบิกเงินไม่ได้สิครับ"`
+                    },
+                    "ผู้ใหญ่บ้าน": {
+                        name: "ผู้ใหญ่บ้าน", avatar: getAvatar("men", 69), pitch: 1.1, rate: 1.0,
+                        greeting: "มาตรวจก็ดีเลยคุณ! บาดาลอะไรไม่รู้ สร้างเสร็จแล้วทิ้งขว้าง หญ้ารกไปหมดแล้ว!",
+                        systemInstruction: `คุณคือ ผู้ใหญ่บ้าน เป็นคนขี้บ่น ${strictRule}
+ข้อมูลที่ให้ได้:
+- บ่อบาดาลในหมู่บ้านทิ้งร้างไป 6 แห่ง หญ้าขึ้นรกหมดแล้ว ไม่ได้ประโยชน์อะไรเลย
+- ถ้าน้ำไหล น้ำก็ขุ่นเหลืองมีตะกอนสีส้มปน กินไม่ได้
+- ตั้งแต่สร้างเสร็จ ไม่เคยมีเจ้าหน้าที่มาเหลียวแล หรือมาช่วยตั้งกรรมการหมู่บ้านดูแลเลย ปล่อยตามยถากรรม`
+                    }
                 }
             },
             "case2": {
-                icon: "fas fa-recycle text-emerald-600", color: "bg-emerald-100", borderColor: "border-emerald-200",
-                title: "กรณีศึกษาที่ 2", desc: "โครงการส่งเสริมคัดแยกขยะ เทศบาล B", goal: "ชาวบ้านไม่ใช้ถังคัดแยกขยะ และปริมาณขยะอินทรีย์ไม่ลดลง",
+                icon: "fas fa-recycle text-emerald-600",
+                color: "bg-emerald-100", borderColor: "border-emerald-200",
+                title: "กรณีศึกษาที่ 2",
+                desc: "โครงการส่งเสริมคัดแยกขยะ เทศบาล B",
+                goal: "ชาวบ้านไม่ใช้ถังคัดแยกขยะ และปริมาณขยะอินทรีย์ไม่ลดลง",
                 personas: {
-                    "จนท": { name: "จนท. สิ่งแวดล้อม", avatar: getAvatar("Mia", "ffdfbf"), pitch: 1.2, rate: 1.0, greeting: "สวัสดีค่ะ ทางเราจัดหาถังคัดแยกขยะและแจกจ่ายครบ 6,000 ครัวเรือนตามเป้าหมายโครงการแล้วนะคะ", systemInstruction: `คุณคือ จนท. สิ่งแวดล้อม เทศบาลเมือง B ${strictRule}\nสเต็ปการให้ข้อมูล:\n- ถามทั่วไป: ยืนยันว่าทำโครงการบรรลุเป้าหมาย แจกถังครบถ้วน\n- โดนถามเรื่องทำไมชาวบ้านไม่ใช้ถัง หรือทิ้งรวม: โยนว่าชาวบ้านไม่ให้ความร่วมมือ และอ้างว่า "เราก็จัดอบรมให้ชาวบ้านต้นแบบไปตั้ง 750 ครัวเรือนแล้วนะคะ"\n- โดนจี้เรื่องถังที่แจกเป็นแบบฝังดินแต่คนอยู่ห้องเช่า/อพาร์ตเมนต์ใช้ไม่ได้: สารภาพว่า "ทางเราเร่งจัดหาถังให้ครบจำนวนเป็นหลักค่ะ เลยไม่ได้พิจารณารูปแบบถังให้เหมาะสมกับลักษณะที่อยู่อาศัย และไม่ได้ติดตามผลหลังแจกไปแล้วค่ะ"` },
-                    "เซลส์": { name: "เซลส์ขายถังขยะ", avatar: getAvatar("Leo", "b6e3f4"), pitch: 1.0, rate: 1.15, greeting: "บริษัทเราส่งมอบถังขยะฝังดินครบถ้วน 6,000 ใบ ตามสัญญาจัดซื้อเลยครับท่าน", systemInstruction: `คุณคือ เซลส์บริษัทขายถังขยะ หัวหมอ เอาตัวรอดเก่ง ${strictRule}\nสเต็ปการให้ข้อมูล:\n- ถามทั่วไป: ยืนยันว่าส่งของครบตามสเปกในสัญญา\n- โดนถามเรื่องทำไมพลาสติกบาง หรือถังแตกง่าย: อ้างว่าใช้งานผิดวิธี ตากแดดจัด\n- โดนจี้เรื่องสเปกถังต่ำกว่ามาตรฐาน: สารภาพว่า "ก็ทางเทศบาลมีงบจำกัดแต่อยากได้ถังตั้ง 6,000 ใบให้ครบเป้าหมาย ผมก็เลยต้องหาถังเกรดพลาสติกบางลงมาหน่อยเพื่อให้ราคาอยู่ในงบไงครับ"` },
-                    "ชาวบ้าน": { name: "แม่บ้าน (ชาวบ้าน)", avatar: getAvatar("Jasmine", "d1d4f9"), pitch: 1.4, rate: 1.1, greeting: "ถังขยะอะไรคะ ป้าไม่เห็นรู้วิธีใช้เลย แตกก็ง่าย แจกมาก็วางกองทิ้งไว้แบบนั้นแหละ!", systemInstruction: `คุณคือ แม่บ้าน ชาวบ้านในพื้นที่ ${strictRule}\nข้อมูลที่ให้ได้:\n- แจกถังแบบฝังดินมาให้ ป้าอยู่ห้องเช่าจะให้ไปขุดดินฝังตรงไหนล่ะ\n- ไม่เคยมีใครมาสอนหรืออบรมวิธีคัดแยกขยะให้เลย แจกแล้วก็ไป\n- ถึงป้าจะอุตส่าห์แยกขยะเปียก ขยะแห้ง พอรถเก็บขยะของเทศบาลมา เขาก็เอาไปเทรวมกันในรถคันเดียวอยู่ดี หมดกำลังใจทำแล้ว` }
+                    "จนท": {
+                        name: "จนท. สิ่งแวดล้อม", avatar: getAvatar("women", 32), pitch: 1.2, rate: 1.0,
+                        greeting: "สวัสดีค่ะ ทางเราจัดหาถังคัดแยกขยะและแจกจ่ายครบ 6,000 ครัวเรือนตามเป้าหมายโครงการแล้วนะคะ",
+                        systemInstruction: `คุณคือ จนท. สิ่งแวดล้อม เทศบาลเมือง B ${strictRule}
+สเต็ปการให้ข้อมูล:
+- ถามทั่วไป: ยืนยันว่าทำโครงการบรรลุเป้าหมาย แจกถังครบถ้วน
+- โดนถามเรื่องทำไมชาวบ้านไม่ใช้ถัง หรือทิ้งรวม: โยนว่าชาวบ้านไม่ให้ความร่วมมือ และอ้างว่า "เราก็จัดอบรมให้ชาวบ้านต้นแบบไปตั้ง 750 ครัวเรือนแล้วนะคะ"
+- โดนจี้เรื่องถังที่แจกเป็นแบบฝังดินแต่คนอยู่ห้องเช่า/อพาร์ตเมนต์ใช้ไม่ได้: สารภาพว่า "ทางเราเร่งจัดหาถังให้ครบจำนวนเป็นหลักค่ะ เลยไม่ได้พิจารณารูปแบบถังให้เหมาะสมกับลักษณะที่อยู่อาศัย และไม่ได้ติดตามผลหลังแจกไปแล้วค่ะ"`
+                    },
+                    "เซลส์": {
+                        name: "เซลส์ขายถังขยะ", avatar: getAvatar("men", 25), pitch: 1.0, rate: 1.15,
+                        greeting: "บริษัทเราส่งมอบถังขยะฝังดินครบถ้วน 6,000 ใบ ตามสัญญาจัดซื้อเลยครับท่าน",
+                        systemInstruction: `คุณคือ เซลส์บริษัทขายถังขยะ หัวหมอ เอาตัวรอดเก่ง ${strictRule}
+สเต็ปการให้ข้อมูล:
+- ถามทั่วไป: ยืนยันว่าส่งของครบตามสเปกในสัญญา
+- โดนถามเรื่องทำไมพลาสติกบาง หรือถังแตกง่าย: อ้างว่าใช้งานผิดวิธี ตากแดดจัด
+- โดนจี้เรื่องสเปกถังต่ำกว่ามาตรฐาน: สารภาพว่า "ก็ทางเทศบาลมีงบจำกัดแต่อยากได้ถังตั้ง 6,000 ใบให้ครบเป้าหมาย ผมก็เลยต้องหาถังเกรดพลาสติกบางลงมาหน่อยเพื่อให้ราคาอยู่ในงบไงครับ"`
+                    },
+                    "ชาวบ้าน": {
+                        name: "แม่บ้าน (ชาวบ้าน)", avatar: getAvatar("women", 68), pitch: 1.4, rate: 1.1,
+                        greeting: "ถังขยะอะไรคะ ป้าไม่เห็นรู้วิธีใช้เลย แตกก็ง่าย แจกมาก็วางกองทิ้งไว้แบบนั้นแหละ!",
+                        systemInstruction: `คุณคือ แม่บ้าน ชาวบ้านในพื้นที่ ${strictRule}
+ข้อมูลที่ให้ได้:
+- แจกถังแบบฝังดินมาให้ ป้าอยู่ห้องเช่าจะให้ไปขุดดินฝังตรงไหนล่ะ
+- ไม่เคยมีใครมาสอนหรืออบรมวิธีคัดแยกขยะให้เลย แจกแล้วก็ไป
+- ถึงป้าจะอุตส่าห์แยกขยะเปียก ขยะแห้ง พอรถเก็บขยะของเทศบาลมา เขาก็เอาไปเทรวมกันในรถคันเดียวอยู่ดี หมดกำลังใจทำแล้ว`
+                    }
                 }
             },
             "case3": {
-                icon: "fas fa-truck text-amber-600", color: "bg-amber-100", borderColor: "border-amber-200",
-                title: "กรณีศึกษาที่ 3", desc: "โครงการพัฒนาจุดจอดพักรถบรรทุก", goal: "จุดจอดรถไม่มีผู้ใช้งาน ห้องน้ำชำรุด และไม่ปลอดภัย",
+                icon: "fas fa-truck text-amber-600",
+                color: "bg-amber-100", borderColor: "border-amber-200",
+                title: "กรณีศึกษาที่ 3",
+                desc: "โครงการพัฒนาจุดจอดพักรถบรรทุก",
+                goal: "จุดจอดรถไม่มีผู้ใช้งาน ห้องน้ำชำรุด และไม่ปลอดภัย",
                 personas: {
-                    "ผอ": { name: "ผอ. แขวงทางหลวง", avatar: getAvatar("King", "c0aede"), pitch: 0.8, rate: 1.0, greeting: "จุดพักรถเราดำเนินการก่อสร้างตามแบบมาตรฐานของกรมทางหลวงครับ มีพื้นที่จอดรถและห้องน้ำพร้อมให้บริการ", systemInstruction: `คุณคือ ผอ. แขวงทางหลวง ผู้ดูแลโครงการ ${strictRule}\nสเต็ปการให้ข้อมูล:\n- ถามทั่วไป: สร้างเสร็จตามแบบ มีกล้องวงจรปิด มีห้องน้ำ\n- โดนถามเรื่องไม่มีรถเข้าไปจอด หรือห้องน้ำพัง/สกปรก: อ้างว่าคนขับรถมักง่ายไม่ยอมเข้า และส่วนห้องน้ำก็โดนคนมือบอนทำพัง "ทางเราไม่มีงบประมาณจ้างแม่บ้านหรือ รปภ. ประจำตลอด 24 ชม. ครับ"\n- โดนจี้เรื่องทำไมทางเข้าแคบ เลี้ยวยาก อยู่ไกลถนนหลัก: สารภาพความลับ "เพื่อความประหยัดงบเวนคืนที่ดินครับ เราเลยเลือกใช้ที่ดินราชการเดิมที่รกร้าง โดยไม่ได้คำนึงว่าทางเข้ามันแคบเกินไปสำหรับรถบรรทุกพ่วงครับ"` },
-                    "ผู้รับเหมา": { name: "ผู้รับเหมาก่อสร้าง", avatar: getAvatar("Buster", "ffdfbf"), pitch: 0.95, rate: 1.05, greeting: "สวัสดีครับ ห้องน้ำกับศาลาพักรถ ผมใช้วัสดุก่อสร้างเกรด A ตามแบบมาตรฐานสำนักออกแบบเป๊ะเลยครับ", systemInstruction: `คุณคือ ผู้รับเหมาก่อสร้าง ${strictRule}\nสเต็ปการให้ข้อมูล:\n- ถามทั่วไป: งานก่อสร้างเนี๊ยบ ไม่มีโกงสเปก\n- โดนถามเรื่องทางเข้าแคบ รถบรรทุกเลี้ยวไม่ได้: ปัดความรับผิดชอบว่า "ผมเป็นแค่ผู้รับเหมาครับ รัฐกำหนดพื้นที่มาตรงนี้ ให้แบบมาแบบนี้ ผมก็ต้องสร้างตามนั้นครับ"\n- โดนซักต่อว่าตอนสร้างไม่รู้หรือว่ารถมันจะเข้าไม่ได้: ยอมรับว่า "ก็พอรู้ครับตอนเอาเครื่องจักรเข้าไปหน้างานมันแคบจริง แต่ผมไม่มีอำนาจไปสั่งเปลี่ยนสถานที่ก่อสร้างของราชการได้นี่ครับ"` },
-                    "คนขับ": { name: "คนขับรถบรรทุก", avatar: getAvatar("Sam", "b6e3f4"), pitch: 0.9, rate: 1.0, greeting: "ใครจะไปจอดครับพี่จุดพักรถแบบนั้น จอดปั๊มน้ำมันทั่วไปยังดีกว่าเยอะ!", systemInstruction: `คุณคือ คนขับรถบรรทุกสิบล้อ/รถพ่วง ${strictRule}\nข้อมูลที่ให้ได้:\n- ทางเข้าจุดพักรถเลี้ยวโค้งแคบมากๆ รถพ่วง 22 ล้อตีวงเลี้ยวเข้าไม่ได้เลย\n- กลางคืนมืดและเปลี่ยวมาก ไม่มี รปภ. เฝ้า จอดนอนแล้วกลัวโดนขโมยน้ำมันหรือสินค้า\n- ห้องน้ำชำรุด สกปรกเหม็นมาก และระบบน้ำก็ไม่ไหล ไม่มีน้ำใช้` }
+                    "ผอ": {
+                        name: "ผอ. แขวงทางหลวง", avatar: getAvatar("men", 14), pitch: 0.8, rate: 1.0,
+                        greeting: "จุดพักรถเราดำเนินการก่อสร้างตามแบบมาตรฐานของกรมทางหลวงครับ มีพื้นที่จอดรถและห้องน้ำพร้อมให้บริการ",
+                        systemInstruction: `คุณคือ ผอ. แขวงทางหลวง ผู้ดูแลโครงการ ${strictRule}
+สเต็ปการให้ข้อมูล:
+- ถามทั่วไป: สร้างเสร็จตามแบบ มีกล้องวงจรปิด มีห้องน้ำ
+- โดนถามเรื่องไม่มีรถเข้าไปจอด หรือห้องน้ำพัง/สกปรก: อ้างว่าคนขับรถมักง่ายไม่ยอมเข้า และส่วนห้องน้ำก็โดนคนมือบอนทำพัง "ทางเราไม่มีงบประมาณจ้างแม่บ้านหรือ รปภ. ประจำตลอด 24 ชม. ครับ"
+- โดนจี้เรื่องทำไมทางเข้าแคบ เลี้ยวยาก อยู่ไกลถนนหลัก: สารภาพความลับ "เพื่อความประหยัดงบเวนคืนที่ดินครับ เราเลยเลือกใช้ที่ดินราชการเดิมที่รกร้าง โดยไม่ได้คำนึงว่าทางเข้ามันแคบเกินไปสำหรับรถบรรทุกพ่วงครับ"`
+                    },
+                    "ผู้รับเหมา": {
+                        name: "ผู้รับเหมาก่อสร้าง", avatar: getAvatar("men", 54), pitch: 0.95, rate: 1.05,
+                        greeting: "สวัสดีครับ ห้องน้ำกับศาลาพักรถ ผมใช้วัสดุก่อสร้างเกรด A ตามแบบมาตรฐานสำนักออกแบบเป๊ะเลยครับ",
+                        systemInstruction: `คุณคือ ผู้รับเหมาก่อสร้าง ${strictRule}
+สเต็ปการให้ข้อมูล:
+- ถามทั่วไป: งานก่อสร้างเนี๊ยบ ไม่มีโกงสเปก
+- โดนถามเรื่องทางเข้าแคบ รถบรรทุกเลี้ยวไม่ได้: ปัดความรับผิดชอบว่า "ผมเป็นแค่ผู้รับเหมาครับ รัฐกำหนดพื้นที่มาตรงนี้ ให้แบบมาแบบนี้ ผมก็ต้องสร้างตามนั้นครับ"
+- โดนซักต่อว่าตอนสร้างไม่รู้หรือว่ารถมันจะเข้าไม่ได้: ยอมรับว่า "ก็พอรู้ครับตอนเอาเครื่องจักรเข้าไปหน้างานมันแคบจริง แต่ผมไม่มีอำนาจไปสั่งเปลี่ยนสถานที่ก่อสร้างของราชการได้นี่ครับ"`
+                    },
+                    "คนขับ": {
+                        name: "คนขับรถบรรทุก", avatar: getAvatar("men", 75), pitch: 0.9, rate: 1.0,
+                        greeting: "ใครจะไปจอดครับพี่จุดพักรถแบบนั้น จอดปั๊มน้ำมันทั่วไปยังดีกว่าเยอะ!",
+                        systemInstruction: `คุณคือ คนขับรถบรรทุกสิบล้อ/รถพ่วง ${strictRule}
+ข้อมูลที่ให้ได้:
+- ทางเข้าจุดพักรถเลี้ยวโค้งแคบมากๆ รถพ่วง 22 ล้อตีวงเลี้ยวเข้าไม่ได้เลย
+- กลางคืนมืดและเปลี่ยวมาก ไม่มี รปภ. เฝ้า จอดนอนแล้วกลัวโดนขโมยน้ำมันหรือสินค้า
+- ห้องน้ำชำรุด สกปรกเหม็นมาก และระบบน้ำก็ไม่ไหล ไม่มีน้ำใช้`
+                    }
                 }
             },
             "case4": {
-                icon: "fas fa-seedling text-green-600", color: "bg-green-100", borderColor: "border-green-200",
-                title: "กรณีศึกษาที่ 4", desc: "โครงการแจกปัจจัยการผลิต (ม.A)", goal: "แจกจ่ายปัจจัยการผลิตล่าช้า และจุดรับของไกลเกิน 80 กม.",
+                icon: "fas fa-seedling text-green-600",
+                color: "bg-green-100", borderColor: "border-green-200",
+                title: "กรณีศึกษาที่ 4",
+                desc: "โครงการแจกปัจจัยการผลิต (ม.A)",
+                goal: "แจกจ่ายปัจจัยการผลิตล่าช้า และจุดรับของไกลเกิน 80 กม.",
                 personas: {
-                    "ผู้รับผิดชอบ": { name: "ผู้รับผิดชอบโครงการ", avatar: getAvatar("George", "b6e3f4"), pitch: 0.95, rate: 1.0, greeting: "มหาวิทยาลัยของเรามุ่งมั่นสนับสนุนปัจจัยการผลิตเพื่อฟื้นฟูเศรษฐกิจฐานรากตามนโยบายรัฐครับ", systemInstruction: `คุณคือ อาจารย์ผู้รับผิดชอบโครงการ มหาวิทยาลัย A ${strictRule}\nสเต็ปการให้ข้อมูล:\n- ถามทั่วไป: ตอบแบบนักวิชาการว่าโครงการช่วยพัฒนาเกษตรกร 35,000 ราย\n- โดนถามเรื่องทำไมแจกของล่าช้า นัดกะทันหัน หรือจุดรับของไกลมาก: โยนความผิดว่าจำนวนคนเยอะมาก บริหารจัดการยาก และบริษัทขนส่งทำงานล่าช้า "เราก็พยายามเร่งรัดแล้วครับ"\n- โดนจี้เรื่องทำไมบริษัทส่งไม่ทัน หรือทำไมนัดล่วงหน้าไม่ถึง 5 วัน: สารภาพว่า "ผู้บริหารขาดการกำกับติดตามลูกน้องครับ และเราไปทำสัญญาจัดซื้อจากบริษัทที่มีที่ตั้งแค่ในภาคอีสานที่เดียว ทำให้เขากระจายของไปทั่วประเทศไม่ทัน และหาจุดนัดรับของที่ใกล้กว่า 80 กม. ให้ไม่ได้ครับ"` },
-                    "บริษัท": { name: "บริษัทคู่ค้า (ซัพพลายเออร์)", avatar: getAvatar("Oscar", "ffdfbf"), pitch: 1.0, rate: 1.1, greeting: "บริษัทเราเตรียมของไว้ครบถ้วนครับ แต่ให้ส่งให้ชาวบ้านตั้ง 35,000 รายทั่วประเทศมันงานช้างนะครับ", systemInstruction: `คุณคือ บริษัทคู่ค้าที่ขายปัจจัยการผลิต ${strictRule}\nสเต็ปการให้ข้อมูล:\n- ถามทั่วไป: บ่นอุปสรรคว่าพยายามส่งของให้เร็วที่สุดแล้ว\n- โดนถามเรื่องทำไมของเสีย ปุ๋ยแข็ง ปลาตาย นัดไกล: อ้างว่าเป็นปัญหาเรื่องระยะทางการขนส่งที่ควบคุมยาก\n- โดนจี้เรื่องทำไมรับงานถ้าส่งไม่ทัน: สารภาพว่า "ฐานการผลิตของบริษัทเราอยู่แค่ในภาคอีสานครับ แต่ทาง มหาวิทยาลัย A สั่งให้เราส่งกระจายทั่วประเทศ มันเลยเกินกำลัง พอขนส่งไกลๆ ปุ๋ยก็ค้างสต๊อกจนแข็ง ปลาในถุงก็ออกซิเจนหมดตายระหว่างทางครับ"` },
-                    "วิสาหกิจชุมชน": { name: "ตัวแทนวิสาหกิจชุมชน", avatar: getAvatar("Cookie", "c0aede"), pitch: 0.85, rate: 0.9, greeting: "นึกจะนัดก็แจ้งล่วงหน้าแค่วันสองวัน ใครจะไปเตรียมหารถกระบะไปขนของทันล่ะครับอาจารย์!", systemInstruction: `คุณคือ ตัวแทนกลุ่มวิสาหกิจชุมชน/ชาวนา ${strictRule}\nข้อมูลที่ให้ได้:\n- โดนแจ้งนัดหมายให้ไปรับของกระชั้นชิดมาก (บอกล่วงหน้าน้อยกว่า 5 วัน) หารถขนไม่ได้\n- จุดที่ให้นัดไปรับของก็อยู่ข้ามอำเภอ/ข้ามจังหวัด ไกลเกิน 80 กม. ลำบากชาวบ้านมาก\n- ได้ของล่าช้าไป 120 วัน จนเลยฤดูเพาะปลูกไปแล้ว และปุ๋ยที่ได้ก็จับตัวแข็งเป็นก้อนหิน ใช้การไม่ได้เลย` }
+                    "ผู้รับผิดชอบ": {
+                        name: "ผู้รับผิดชอบโครงการ", avatar: getAvatar("men", 42), pitch: 0.95, rate: 1.0,
+                        greeting: "มหาวิทยาลัยของเรามุ่งมั่นสนับสนุนปัจจัยการผลิตเพื่อฟื้นฟูเศรษฐกิจฐานรากตามนโยบายรัฐครับ",
+                        systemInstruction: `คุณคือ อาจารย์ผู้รับผิดชอบโครงการ มหาวิทยาลัย A ${strictRule}
+สเต็ปการให้ข้อมูล:
+- ถามทั่วไป: ตอบแบบนักวิชาการว่าโครงการช่วยพัฒนาเกษตรกร 35,000 ราย
+- โดนถามเรื่องทำไมแจกของล่าช้า นัดกะทันหัน หรือจุดรับของไกลมาก: โยนความผิดว่าจำนวนคนเยอะมาก บริหารจัดการยาก และบริษัทขนส่งทำงานล่าช้า "เราก็พยายามเร่งรัดแล้วครับ"
+- โดนจี้เรื่องทำไมบริษัทส่งไม่ทัน หรือทำไมนัดล่วงหน้าไม่ถึง 5 วัน: สารภาพว่า "ผู้บริหารขาดการกำกับติดตามลูกน้องครับ และเราไปทำสัญญาจัดซื้อจากบริษัทที่มีที่ตั้งแค่ในภาคอีสานที่เดียว ทำให้เขากระจายของไปทั่วประเทศไม่ทัน และหาจุดนัดรับของที่ใกล้กว่า 80 กม. ให้ไม่ได้ครับ"`
+                    },
+                    "บริษัท": {
+                        name: "บริษัทคู่ค้า (ซัพพลายเออร์)", avatar: getAvatar("women", 29), pitch: 1.0, rate: 1.1,
+                        greeting: "บริษัทเราเตรียมของไว้ครบถ้วนครับ แต่ให้ส่งให้ชาวบ้านตั้ง 35,000 รายทั่วประเทศมันงานช้างนะครับ",
+                        systemInstruction: `คุณคือ บริษัทคู่ค้าที่ขายปัจจัยการผลิต ${strictRule}
+สเต็ปการให้ข้อมูล:
+- ถามทั่วไป: บ่นอุปสรรคว่าพยายามส่งของให้เร็วที่สุดแล้ว
+- โดนถามเรื่องทำไมของเสีย ปุ๋ยแข็ง ปลาตาย นัดไกล: อ้างว่าเป็นปัญหาเรื่องระยะทางการขนส่งที่ควบคุมยาก
+- โดนจี้เรื่องทำไมรับงานถ้าส่งไม่ทัน: สารภาพว่า "ฐานการผลิตของบริษัทเราอยู่แค่ในภาคอีสานครับ แต่ทาง มหาวิทยาลัย A สั่งให้เราส่งกระจายทั่วประเทศ มันเลยเกินกำลัง พอขนส่งไกลๆ ปุ๋ยก็ค้างสต๊อกจนแข็ง ปลาในถุงก็ออกซิเจนหมดตายระหว่างทางครับ"`
+                    },
+                    "วิสาหกิจชุมชน": {
+                        name: "ตัวแทนวิสาหกิจชุมชน", avatar: getAvatar("men", 82), pitch: 0.85, rate: 0.9,
+                        greeting: "นึกจะนัดก็แจ้งล่วงหน้าแค่วันสองวัน ใครจะไปเตรียมหารถกระบะไปขนของทันล่ะครับอาจารย์!",
+                        systemInstruction: `คุณคือ ตัวแทนกลุ่มวิสาหกิจชุมชน/ชาวนา ${strictRule}
+ข้อมูลที่ให้ได้:
+- โดนแจ้งนัดหมายให้ไปรับของกระชั้นชิดมาก (บอกล่วงหน้าน้อยกว่า 5 วัน) หารถขนไม่ได้
+- จุดที่ให้นัดไปรับของก็อยู่ข้ามอำเภอ/ข้ามจังหวัด ไกลเกิน 80 กม. ลำบากชาวบ้านมาก
+- ได้ของล่าช้าไป 120 วัน จนเลยฤดูเพาะปลูกไปแล้ว และปุ๋ยที่ได้ก็จับตัวแข็งเป็นก้อนหิน ใช้การไม่ได้เลย`
+                    }
                 }
             },
             "case5": {
-                icon: "fas fa-solar-panel text-orange-600", color: "bg-orange-100", borderColor: "border-orange-200",
-                title: "กรณีศึกษาที่ 5", desc: "โครงการโคมไฟโซลาร์เซลล์", goal: "โคมไฟดับเร็ว ติดตั้งซ้ำซ้อน และขาดการบำรุงรักษา",
+                icon: "fas fa-solar-panel text-orange-600",
+                color: "bg-orange-100", borderColor: "border-orange-200",
+                title: "กรณีศึกษาที่ 5",
+                desc: "โครงการโคมไฟโซลาร์เซลล์",
+                goal: "โคมไฟดับเร็ว ติดตั้งซ้ำซ้อน และขาดการบำรุงรักษา",
                 personas: {
-                    "สมหมาย": { name: "เจ้าหน้าที่ อปท. (สมหมาย)", avatar: getAvatar("Simon", "b6e3f4"), pitch: 0.8, rate: 1.0, greeting: "สวัสดีครับ โคมไฟ 200 ชุดในพื้นที่ใช้งานได้ดีครับ มีประเด็นอะไรสอบถามได้เลยครับ", systemInstruction: `คุณคือ สมหมาย จนท. อปท. ${strictRule}\nสเต็ปการให้ข้อมูล:\n- ถามทั่วไป: ตอบว่าโครงการมีประโยชน์ต่อชุมชน\n- โดนถามเรื่องเสาไฟซ้ำซ้อน: ตอบปัดว่าเรื่องแผงสกปรกเป็นเพราะพลังงานจังหวัดหรือผู้รับจ้างไม่มาล้างแผงช่วงรับประกัน\n- โดนจี้เรื่องทำไมไม่สั่งย้าย: สารภาพว่า "ผมเห็นครับว่าไม่เหมาะสม แต่ไม่กล้าสั่งย้ายเองเพราะขาดความรู้เรื่องระเบียบพัสดุ กลัวโดนสอบครับ"` },
-                    "เสี่ยชัย": { name: "ผู้รับจ้าง (เสี่ยชัย)", avatar: getAvatar("Milo", "ffdfbf"), pitch: 1.0, rate: 1.15, greeting: "สวัสดีครับท่าน! บริษัทผมรับงานติดตั้งโคมไฟ All in One ครบถ้วนตามสัญญาครับ!", systemInstruction: `คุณคือ เสี่ยชัย ผู้รับจ้าง ${strictRule}\nสเต็ปการให้ข้อมูล:\n- ถามทั่วไป: ยืนยันว่าของดีมีมาตรฐาน ติดตั้งครบตามจำนวนเป๊ะๆ\n- โดนถามเรื่องโคมไฟดับ: โยนความผิดให้อปท. ว่าไม่ยอมเช็ดฝุ่น ฝุ่นเกาะชาร์จไม่เข้า\n- โดนจี้เรื่องไปตั้งใต้ต้นไม้: สารภาพว่า "ก่อนติดตั้ง ไม่มีการลงพื้นที่สำรวจกายภาพร่วมกับรัฐเลยครับ ให้พิกัดมายังไงลูกน้องก็ขุดตรงนั้น"` },
-                    "ป้าศรี": { name: "ผู้นำชุมชน (ป้าศรี)", avatar: getAvatar("Missy", "d1d4f9"), pitch: 1.3, rate: 1.05, greeting: "มาตรวจสักทีนะคะ! โคมไฟอะไรไม่รู้ ชาวบ้านบ่นกันอุบเลยค่ะ!", systemInstruction: `คุณคือ ป้าศรี ผู้นำชุมชน ${strictRule}\nข้อมูลที่ให้ได้: ไฟสว่างแค่หัวค่ำ หลังเที่ยงคืนดับหมด ติดซ้ำซ้อนไฟหลวง ไม่เคยเห็นใครมาล้างแผง พังไปเป็นสิบต้นแล้ว` }
+                    "สมหมาย": {
+                        name: "เจ้าหน้าที่ อปท. (สมหมาย)", avatar: getAvatar("men", 36), pitch: 0.8, rate: 1.0,
+                        greeting: "สวัสดีครับ โคมไฟ 200 ชุดในพื้นที่ใช้งานได้ดีครับ มีประเด็นอะไรให้ผมชี้แจงสอบถามได้เลยครับ",
+                        systemInstruction: `คุณคือ สมหมาย จนท. อปท. ${strictRule}
+สเต็ปการให้ข้อมูล:
+- ถามทั่วไป: ตอบแบบข้าราชการว่าโครงการมีประโยชน์ต่อชุมชน
+- โดนถามเรื่องเสาไฟซ้ำซ้อนกับไฟหลวง หรือทำไมไม่ดูแลล้างแผงโซลาร์: ตอบปัดว่าเรื่องแผงสกปรกเป็นเพราะ "ผมเข้าใจว่าการล้างแผงและซ่อมบำรุงยังเป็นหน้าที่ของสำนักงานพลังงานจังหวัดหรือผู้รับจ้างในช่วงรับประกัน 2 ปีครับ"
+- โดนจี้เรื่องทำไมเห็นว่าติดใต้ต้นไม้/ติดซ้ำซ้อนแล้วไม่สั่งย้าย: สารภาพความลับ "ผมเห็นแล้วครับว่ามันไม่เหมาะสม แต่ผมไม่กล้าสั่งย้ายจุดเองครับ เพราะผมขาดความรู้เรื่องระเบียบการบริหารพัสดุ กลัวทำผิดขั้นตอนแล้วจะโดนสอบครับ"`
+                    },
+                    "เสี่ยชัย": {
+                        name: "ผู้รับจ้าง (เสี่ยชัย)", avatar: getAvatar("men", 50), pitch: 1.0, rate: 1.15,
+                        greeting: "สวัสดีครับท่าน! บริษัทผมรับงานติดตั้งโคมไฟ All in One มาตรฐานบัญชีนวัตกรรม ครบถ้วนตามสัญญาครับ!",
+                        systemInstruction: `คุณคือ เสี่ยชัย ผู้รับจ้าง ${strictRule}
+สเต็ปการให้ข้อมูล:
+- ถามทั่วไป: ยืนยันว่าของดีมีมาตรฐาน ติดตั้งครบตามจำนวนเป๊ะๆ
+- โดนถามเรื่องโคมไฟดับหลังเที่ยงคืน หรือแบตเสื่อม: โยนความผิดให้ อปท. ว่า "มันไม่ได้พังครับ แต่ อปท. ไม่ยอมส่งคนมาเช็ดฝุ่นที่แผง พอฝุ่นเกาะหนา แบตมันก็ชาร์จไฟไม่เข้าไงครับ"
+- โดนจี้เรื่องทำไมตอนมาติดถึงเอาไปตั้งใต้ต้นไม้ หรือตั้งใกล้ไฟหลวง: สารภาพว่า "ก่อนติดตั้ง ไม่มีการลงพื้นที่สำรวจกายภาพร่วมกับหน่วยงานรัฐเลยครับ ทางราชการให้พิกัดกระดาษมายังไง ลูกน้องผมก็ไปขุดหลุมติดตรงนั้นแหละครับ ไม่กล้าเปลี่ยนเอง"`
+                    },
+                    "ป้าศรี": {
+                        name: "ผู้นำชุมชน (ป้าศรี)", avatar: getAvatar("women", 76), pitch: 1.3, rate: 1.05,
+                        greeting: "มาตรวจสักทีนะคะ! โคมไฟอะไรไม่รู้ ชาวบ้านบ่นกันอุบเลยค่ะ ลองไปดูตรงท้ายซอยสิคะ!",
+                        systemInstruction: `คุณคือ ป้าศรี ผู้นำชุมชน ${strictRule}
+ข้อมูลที่ให้ได้:
+- ไฟมันสว่างแค่ช่วงหัวค่ำ พอหลังเที่ยงคืนไฟก็ดับหมดแล้ว เช้ามืดเดินตลาดลำบากมาก
+- บางจุดไปตั้งซ้ำซ้อนกับเสาไฟหลวงที่มันสว่างอยู่แล้ว ไม่รู้จะติดทำไมเบียดกัน
+- ตั้งแต่มาติดเสร็จ ไม่เคยเห็น อปท. หรือใครมาล้างแผงทำความสะอาดเลย ฝุ่นเกาะจนพังไปเป็นสิบเสาแล้ว`
+                    }
                 }
             }
         };
 
-        // --- State ---
+        // ==========================================
+        // 2. STATE & SETUP
+        // ==========================================
+        // ซ่อน API Key ด้วย Base64
         const encodedKey = "QUl6YVN5REVHbWQ5SEpucmtfd0Z2MktpUTk3Q2VER256TmRmeUtr";
         let apiKey = atob(encodedKey).trim();
-        let currentCaseId = "case1"; 
+
+        let currentCaseId = null;
         let currentPersonaId = null;
         let chatHistories = {}; 
         
@@ -269,17 +435,29 @@
         const synth = window.speechSynthesis;
         let recognition = null;
 
+        // ==========================================
+        // 3. UI INITIALIZATION & LOGIC
+        // ==========================================
         function initApp() {
             renderHomeCards();
             showHome();
+            if (synth.onvoiceschanged !== undefined) {
+                synth.onvoiceschanged = () => { console.log("Voices loaded"); };
+            }
         }
+
+        // Functions for Modal (kept just in case manual entry is needed later)
+        function showApiKeyModal() { /* logic removed as key is hardcoded */ }
+        function hideApiKeyModal() { document.getElementById('apiKeyModal').classList.add('hidden'); }
+        function saveApiKey() { /* logic removed as key is hardcoded */ }
 
         function renderHomeCards() {
             const grid = document.getElementById('caseGrid');
             grid.innerHTML = '';
+            
             for (const [key, data] of Object.entries(auditCases)) {
                 const card = document.createElement('div');
-                card.className = `case-card bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 cursor-pointer relative shadow-sm`;
+                card.className = `case-card bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 cursor-pointer relative flex flex-col h-full shadow-sm`;
                 card.onclick = () => selectCase(key);
                 
                 const avatarHTML = Object.values(data.personas).map(p => 
@@ -287,17 +465,22 @@
                 ).join('');
 
                 card.innerHTML = `
-                    <div class="w-14 h-14 rounded-xl ${data.color} flex items-center justify-center mb-4 z-10 border ${data.borderColor} shadow-sm">
-                        <i class="${data.icon} text-2xl"></i>
+                    <div class="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-transparent ${data.color.replace('bg-', 'to-')} opacity-40 rounded-bl-full pointer-events-none"></div>
+                    <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl ${data.color} flex items-center justify-center mb-4 sm:mb-5 z-10 border ${data.borderColor} shadow-sm">
+                        <i class="${data.icon} text-xl sm:text-2xl"></i>
                     </div>
-                    <div>
-                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">${data.title}</span>
-                        <h3 class="text-lg font-bold text-slate-800 mt-1 mb-2">${data.desc}</h3>
-                        <p class="text-sm text-slate-600 line-clamp-2"><strong>Hint:</strong> ${data.goal}</p>
+                    <div class="z-10 flex-1">
+                        <span class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">${data.title}</span>
+                        <h3 class="text-base sm:text-lg font-bold text-slate-800 mt-1 mb-2 sm:mb-3 leading-tight">${data.desc}</h3>
+                        <div class="bg-slate-50 p-2.5 sm:p-3 rounded-lg border border-slate-100">
+                            <p class="text-xs sm:text-sm text-slate-600 line-clamp-2"><i class="fas fa-lightbulb text-amber-500 mr-1.5"></i><strong>Hint:</strong> ${data.goal}</p>
+                        </div>
                     </div>
-                    <div class="mt-4 pt-4 border-t border-slate-100 flex justify-between items-center">
-                        <div class="flex pl-2">${avatarHTML}</div>
-                        <span class="text-sm font-semibold text-blue-600">เข้าสัมภาษณ์ <i class="fas fa-arrow-right ml-1"></i></span>
+                    <div class="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-slate-100 flex justify-between items-center z-10">
+                        <div class="flex pl-2">
+                            ${avatarHTML}
+                        </div>
+                        <span class="text-xs sm:text-sm font-semibold text-blue-600 bg-blue-50 px-3 py-1.5 rounded-full group-hover:bg-blue-600 group-hover:text-white transition-colors">เข้าสัมภาษณ์ <i class="fas fa-arrow-right ml-1 text-[10px] sm:text-xs"></i></span>
                     </div>
                 `;
                 grid.appendChild(card);
@@ -308,31 +491,39 @@
             if (synth.speaking) synth.cancel();
             stopTalkingAnimation();
             document.getElementById('homeView').classList.remove('hidden');
+            
+            // To be 100% safe with flex, manually manipulate flex classes
             document.getElementById('chatView').classList.add('hidden');
             document.getElementById('chatView').classList.remove('flex');
+            
             document.getElementById('backBtn').classList.add('hidden');
         }
 
         function selectCase(caseId) {
             currentCaseId = caseId;
-            const data = auditCases[caseId];
-            document.getElementById('roomCaseTitle').innerText = `${data.title}: ${data.desc}`;
-            document.getElementById('roomCaseGoal').innerHTML = `<strong>Hint:</strong> ${data.goal}`;
+            const currentCaseData = auditCases[caseId];
+            
+            document.getElementById('roomCaseTitle').innerText = `${currentCaseData.title}: ${currentCaseData.desc}`;
+            document.getElementById('roomCaseGoal').innerHTML = `<strong>Hint:</strong> ${currentCaseData.goal}`;
             
             chatHistories = {};
-            const select = document.getElementById('personaSelect');
-            select.innerHTML = '';
             
-            let first = true;
-            for (const [pKey, pData] of Object.entries(data.personas)) {
-                select.add(new Option(pData.name, pKey));
+            const personaSelect = document.getElementById('personaSelect');
+            personaSelect.innerHTML = '';
+            let firstPersona = true;
+            
+            for (const [pKey, pData] of Object.entries(currentCaseData.personas)) {
+                personaSelect.add(new Option(pData.name, pKey));
                 chatHistories[pKey] = []; 
-                if(first) { currentPersonaId = pKey; first = false; }
+                if(firstPersona) { currentPersonaId = pKey; firstPersona = false; }
             }
             
             document.getElementById('homeView').classList.add('hidden');
+            
+            // Safely show flex layout
             document.getElementById('chatView').classList.remove('hidden');
             document.getElementById('chatView').classList.add('flex');
+            
             document.getElementById('backBtn').classList.remove('hidden');
             
             changePersona();
@@ -342,72 +533,100 @@
             if (synth.speaking) synth.cancel();
             stopTalkingAnimation();
             currentPersonaId = document.getElementById('personaSelect').value;
+            
             const personaData = auditCases[currentCaseId].personas[currentPersonaId];
             
-            document.getElementById('bigAvatarName').innerText = personaData.name;
+            // Update small avatar icon
             document.getElementById('personaSelectAvatar').innerHTML = `<div class="w-6 h-6 sm:w-7 sm:h-7 rounded-full overflow-hidden border border-slate-200">${personaData.avatar}</div>`;
+            
+            // Update BIG avatar stage
             document.getElementById('bigAvatarElement').innerHTML = personaData.avatar;
+            document.getElementById('bigAvatarName').innerText = personaData.name;
             
             renderChat();
         }
 
         function renderChat() {
-            const box = document.getElementById('chatBox');
-            box.innerHTML = '';
+            const chatBox = document.getElementById('chatBox');
+            chatBox.innerHTML = '';
+            
             const personaData = auditCases[currentCaseId].personas[currentPersonaId];
-
+            
+            // แสดงข้อความเริ่มต้นแทนการดึงประโยค greeting มาแสดงโดยอัตโนมัติ
             if (chatHistories[currentPersonaId].length === 0) {
-                box.innerHTML = `<div class="w-full text-center text-slate-400 text-sm mt-4 mb-2 font-medium bg-slate-100 py-2 rounded-lg border border-slate-200"><i class="fas fa-microphone-alt mr-1.5"></i> 2D Avatar พร้อมให้สัมภาษณ์แล้ว</div>`;
+                chatBox.innerHTML = `<div class="w-full text-center text-slate-400 text-xs sm:text-sm mt-4 mb-2 font-medium bg-slate-100 py-2 rounded-lg border border-slate-200"><i class="fas fa-microphone-alt mr-1.5"></i> ผู้ถูกสัมภาษณ์พร้อมแล้ว กรุณาเริ่มตั้งคำถาม</div>`;
             }
+            
             chatHistories[currentPersonaId].forEach(msg => {
-                addMessageToUI(msg.role === 'user' ? 'user' : 'bot', msg.parts[0].text, personaData.avatar);
+                const type = msg.role === 'user' ? 'user' : 'bot';
+                addMessageToUI(type, msg.parts[0].text, personaData.avatar);
             });
             scrollToBottom();
         }
 
         function addMessageToUI(type, text, avatarHTML = "") {
-            const box = document.getElementById('chatBox');
-            const div = document.createElement('div');
-            div.className = `flex w-full ${type === 'user' ? 'justify-end' : 'justify-start'}`;
+            const chatBox = document.getElementById('chatBox');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `flex w-full ${type === 'user' ? 'justify-end' : 'justify-start'}`;
+            
             if (type === 'user') {
-                div.innerHTML = `<div class="bg-blue-600 text-white px-4 py-3 rounded-2xl rounded-tr-sm max-w-[85%] shadow-md text-[14px] sm:text-[15px] leading-relaxed">${escapeHTML(text)}</div>`;
+                msgDiv.innerHTML = `<div class="bg-blue-600 text-white px-4 py-2.5 sm:px-5 sm:py-3.5 rounded-2xl rounded-tr-sm max-w-[85%] sm:max-w-[75%] shadow-md text-[14px] sm:text-[15px] leading-relaxed border border-blue-700">${escapeHTML(text)}</div>`;
             } else {
-                div.innerHTML = `
-                    <div class="flex items-end gap-2 sm:gap-3 max-w-[85%]">
-                        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white flex items-center justify-center text-xl shadow-md flex-shrink-0 border-2 border-white overflow-hidden z-10">${avatarHTML}</div>
-                        <div class="bg-white border border-slate-200 text-slate-800 px-4 py-3 rounded-2xl rounded-tl-sm shadow-md text-[14px] sm:text-[15px] leading-relaxed">${escapeHTML(text)}</div>
+                msgDiv.innerHTML = `
+                    <div class="flex items-end gap-2 sm:gap-3 max-w-[95%] sm:max-w-[80%]">
+                        <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-white flex items-center justify-center text-xl shadow-md flex-shrink-0 border-2 border-white overflow-hidden z-10">${avatarHTML}</div>
+                        <div class="bg-white border border-slate-200 text-slate-800 px-4 py-2.5 sm:px-5 sm:py-3.5 rounded-2xl rounded-tl-sm shadow-sm text-[14px] sm:text-[15px] leading-relaxed whitespace-pre-wrap">${escapeHTML(text)}</div>
                     </div>`;
             }
-            box.appendChild(div);
+            chatBox.appendChild(msgDiv);
             scrollToBottom();
         }
 
+        // ==========================================
+        // 4. API & INTERACTION
+        // ==========================================
         async function fetchWithRetry(url, options, retries = 3) {
             const delays = [1000, 2000, 4000];
             for (let i = 0; i < retries; i++) {
                 try {
-                    const res = await fetch(url, options);
-                    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-                    return await res.json();
-                } catch (err) {
-                    if (i === retries - 1) throw err;
-                    await new Promise(r => setTimeout(r, delays[i]));
+                    const response = await fetch(url, options);
+                    if (!response.ok) {
+                        let errMsg = `HTTP error! status: ${response.status}`;
+                        try {
+                            const errData = await response.json();
+                            if (errData.error && errData.error.message) {
+                                errMsg = `${response.status} - ${errData.error.message}`;
+                            }
+                        } catch(e) {}
+                        throw new Error(errMsg);
+                    }
+                    return await response.json();
+                } catch (error) {
+                    if (i === retries - 1) throw error;
+                    await new Promise(res => setTimeout(res, delays[i]));
                 }
             }
         }
 
         async function sendMessage(e) {
             e.preventDefault();
-            const input = document.getElementById('userInput');
-            const text = input.value.trim();
+            const userInput = document.getElementById('userInput');
+            const text = userInput.value.trim();
             if (!text) return;
+
+            if (!apiKey) {
+                alert("กรุณาตั้งค่า API Key ก่อนครับ");
+                return;
+            }
 
             if (isDictating && recognition) recognition.stop();
             if (synth.speaking) synth.cancel();
             stopTalkingAnimation();
 
             const personaData = auditCases[currentCaseId].personas[currentPersonaId];
-            input.value = ''; input.disabled = true;
+            
+            userInput.value = '';
+            userInput.disabled = true;
             document.getElementById('sendBtn').disabled = true;
             document.getElementById('micBtn').disabled = true;
             
@@ -418,8 +637,8 @@
             document.getElementById('chatBox').insertAdjacentHTML('beforeend', `
                 <div id="${typingId}" class="flex w-full justify-start">
                     <div class="flex items-end gap-2 sm:gap-3 max-w-[85%]">
-                        <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white flex items-center justify-center text-xl shadow-md flex-shrink-0 border-2 border-white overflow-hidden z-10">${personaData.avatar}</div>
-                        <div class="bg-white border border-slate-200 px-5 py-4 rounded-2xl rounded-tl-sm shadow-md">
+                        <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-white flex items-center justify-center text-xl shadow-md flex-shrink-0 border-2 border-white overflow-hidden">${personaData.avatar}</div>
+                        <div class="bg-white border border-slate-200 px-4 py-3 sm:px-5 sm:py-4 rounded-2xl rounded-tl-sm shadow-sm">
                             <div class="typing-indicator flex items-center h-full"><span></span><span></span><span></span></div>
                         </div>
                     </div>
@@ -427,32 +646,51 @@
             scrollToBottom();
 
             try {
+                // ใช้ gemini-2.5-flash ตามบัญชี Paid Tier 1
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+                
+                // นำข้อมูล Greeting มาฝังในสมอง AI ให้รับรู้เป็นข้อมูลตั้งต้น (โดยไม่ปริ้นต์ลงจอเองตั้งแต่แรก)
                 const payload = {
-                    systemInstruction: { parts: [{ text: `สถานะโครงการ: "${personaData.greeting}"\n\n${personaData.systemInstruction}` }] },
+                    systemInstruction: { parts: [{ text: `สถานะโครงการ/จุดยืนของคุณ: "${personaData.greeting}" (ให้ตอบข้อมูลนี้เมื่อถูกถามถึงภาพรวมของโครงการเท่านั้น ห้ามตอบถ้าผู้ตรวจแค่กล่าวทักทาย)\n\n${personaData.systemInstruction}` }] },
                     contents: chatHistories[currentPersonaId],
-                    generationConfig: { temperature: 0.5 }
+                    generationConfig: { temperature: 0.5 } // ลดอุณหภูมิลงนิดหน่อยเพื่อให้ AI ไม่หลุดความลับง่ายไป
                 };
-                const data = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+
+                const data = await fetchWithRetry(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
 
                 document.getElementById(typingId)?.remove();
+
                 if (data.candidates && data.candidates.length > 0) {
                     const botReply = data.candidates[0].content.parts[0].text;
                     addMessageToUI('bot', botReply, personaData.avatar);
                     chatHistories[currentPersonaId].push({ role: "model", parts: [{ text: botReply }] });
                     speakText(botReply, personaData.pitch, personaData.rate);
-                }
-            } catch (err) {
+                } else { throw new Error("No response"); }
+
+            } catch (error) {
                 document.getElementById(typingId)?.remove();
-                addMessageToUI('bot', `[ระบบขัดข้อง]: ${err.message}`, personaData.avatar);
+                
+                let errorMsg = "ไม่สามารถติดต่อได้ กรุณาตรวจสอบอินเทอร์เน็ตหรือโควตา API";
+                if(error.message) errorMsg += ` (รายละเอียด: ${error.message})`;
+                
+                addMessageToUI('bot', `[ระบบขัดข้อง]: ${errorMsg}`, "⚠️");
                 chatHistories[currentPersonaId].pop();
             } finally {
-                input.disabled = false; document.getElementById('sendBtn').disabled = false;
+                userInput.disabled = false;
+                document.getElementById('sendBtn').disabled = false;
                 document.getElementById('micBtn').disabled = false;
-                input.focus(); scrollToBottom();
+                userInput.focus();
+                scrollToBottom();
             }
         }
 
+        // ==========================================
+        // 5. VOICE SYSTEM & ANIMATION
+        // ==========================================
         function stopTalkingAnimation() {
             const avatarEl = document.getElementById('bigAvatarElement');
             if (avatarEl) avatarEl.classList.remove('animate-talk');
@@ -461,33 +699,42 @@
         function toggleVoice() {
             isVoiceEnabled = !isVoiceEnabled;
             document.getElementById('voiceIcon').className = isVoiceEnabled ? 'fas fa-volume-up text-blue-600' : 'fas fa-volume-mute text-slate-400';
-            document.getElementById('voiceText').className = isVoiceEnabled ? 'text-blue-600 font-semibold' : 'text-slate-500 font-semibold';
+            document.getElementById('voiceText').className = isVoiceEnabled ? 'text-blue-600 font-semibold hidden sm:inline' : 'text-slate-500 font-semibold hidden sm:inline';
             document.getElementById('voiceText').innerText = isVoiceEnabled ? 'ระบบเสียง (เปิด)' : 'ระบบเสียง (ปิด)';
             if (isVoiceEnabled) { let u = new SpeechSynthesisUtterance(''); u.volume = 0; synth.speak(u); } 
-            else { if (synth.speaking) synth.cancel(); stopTalkingAnimation(); }
+            else { 
+                if (synth.speaking) synth.cancel(); 
+                stopTalkingAnimation();
+            }
         }
 
         function speakText(text, pitch, rate) {
             const avatarEl = document.getElementById('bigAvatarElement');
+            
             if (!isVoiceEnabled || !synth) {
+                // Animate fallback if voice is disabled (จำลองเวลาพูดตามความยาวตัวอักษร)
                 if(avatarEl) {
                     avatarEl.classList.add('animate-talk');
                     setTimeout(() => avatarEl.classList.remove('animate-talk'), Math.min(text.length * 50, 4000));
                 }
                 return;
             }
-            if (synth.speaking) synth.cancel();
-            const utter = new SpeechSynthesisUtterance(text);
-            utter.lang = 'th-TH'; utter.pitch = pitch; utter.rate = rate;
             
-            utter.onstart = () => { if(avatarEl) avatarEl.classList.add('animate-talk'); };
-            utter.onend = () => { if(avatarEl) avatarEl.classList.remove('animate-talk'); };
-            utter.onerror = () => { if(avatarEl) avatarEl.classList.remove('animate-talk'); };
-            synth.speak(utter);
+            if (synth.speaking) synth.cancel();
+            const utterThis = new SpeechSynthesisUtterance(text);
+            utterThis.lang = 'th-TH'; utterThis.pitch = pitch; utterThis.rate = rate;
+            
+            // ขยับปาก/การ์ตูนเด้งเมื่อเสียงเริ่ม และหยุดเมื่อพูดจบ
+            utterThis.onstart = () => { if(avatarEl) avatarEl.classList.add('animate-talk'); };
+            utterThis.onend = () => { if(avatarEl) avatarEl.classList.remove('animate-talk'); };
+            utterThis.onerror = () => { if(avatarEl) avatarEl.classList.remove('animate-talk'); };
+            
+            synth.speak(utterThis);
         }
 
         function toggleDictation() { isDictating ? (recognition && recognition.stop()) : startDictation(); }
-        function startDictation() { 
+
+        function startDictation() {
             const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRec) return alert("เบราว์เซอร์ไม่รองรับระบบสั่งงานด้วยเสียง แนะนำให้ใช้ Google Chrome ครับ");
             if (!recognition) {
@@ -507,9 +754,10 @@
             }
             try { recognition.start(); } catch (e) { console.error("Started", e); }
         }
+
         function scrollToBottom() { const b = document.getElementById('chatBox'); b.scrollTop = b.scrollHeight; }
-        function escapeHTML(str) { return str.replace(/[&<>'"]/g, t => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[t])); }
-        
+        function escapeHTML(str) { return str.replace(/[&<>'"]/g, tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag])); }
+
         window.onload = initApp;
     </script>
 </body>

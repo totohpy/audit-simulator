@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>กระดานข้อมูลวิเคราะห์ความเหลื่อมล้ำปัญหาไฟป่า</title>
     
+    <!-- เพิ่ม Meta Tags (Open Graph) เพื่อให้ Social Media และบางแพลตฟอร์มรู้จักลิงก์นี้ -->
+    <meta property="og:title" content="กระดานข้อมูลวิเคราะห์ความเหลื่อมล้ำปัญหาไฟป่า" />
+    <meta property="og:description" content="แดชบอร์ดเปรียบเทียบความต้องการจริง กับ งบประมาณที่ได้รับของแต่ละจังหวัด" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://totohpy.github.io/audit-simulator/forest-fire/" />
+    
     <!-- นำเข้า Tailwind CSS เพื่อจัดการความสวยงาม -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- นำเข้าฟอนต์ภาษาไทย (Sarabun) ให้อ่านง่าย -->
@@ -244,20 +250,22 @@
           const CustomYAxisLabel = ({ viewBox }) => {
             const text = view.yLabel;
             const splitIndex = text.indexOf('(');
-            const xPos = viewBox.x + 20; 
-            const yPos = viewBox.y - 45; 
+            // ปรับตำแหน่งแกน X ให้เริ่มวาดจากแนวกราฟพอดี (ไม่ต้องเผื่อตรงกลาง)
+            const xPos = viewBox.x - 45; 
+            const yPos = viewBox.y - 35; 
 
             if (splitIndex !== -1) {
               const line1 = text.substring(0, splitIndex).trim();
               const line2 = text.substring(splitIndex).trim();
               return (
-                <text textAnchor="middle" fontWeight="bold" fill="#374151" fontSize={13}>
+                // ใช้ textAnchor="start" เพื่อให้ข้อความวิ่งไปทางขวา จะได้ไม่ตกขอบซ้าย
+                <text textAnchor="start" fontWeight="bold" fill="#374151" fontSize={13}>
                   <tspan x={xPos} y={yPos}>{line1}</tspan>
                   <tspan x={xPos} y={yPos + 18} fontSize={11} fill="#6b7280">{line2}</tspan>
                 </text>
               );
             }
-            return <text x={xPos} y={yPos + 10} textAnchor="middle" fontWeight="bold" fill="#374151" fontSize={13}>{text}</text>;
+            return <text x={xPos} y={yPos + 10} textAnchor="start" fontWeight="bold" fill="#374151" fontSize={13}>{text}</text>;
           };
 
           return (
@@ -285,7 +293,8 @@
 
               <div className="flex-grow w-full h-full min-h-[600px] bg-white rounded-xl shadow-sm border border-gray-200 p-4 relative">
                 <ResponsiveContainer width="100%" height="100%">
-                  <ComposedChart margin={{ top: 90, right: 100, bottom: 40, left: 50 }}>
+                  {/* เพิ่ม left margin ให้มีพื้นที่สำหรับชื่อแกนมากขึ้น */}
+                  <ComposedChart margin={{ top: 90, right: 100, bottom: 40, left: 60 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                     <XAxis type="number" dataKey="forest" name="พื้นที่ป่า" tickFormatter={formatNumber} domain={[0, 20000000]} tick={{ fill: '#6b7280' }} label={{ value: 'พื้นที่ป่ารวม (ไร่)', position: 'insideBottomRight', offset: -25, fontWeight: 'bold', fill: '#374151' }} />
                     <YAxis type="number" dataKey={view.yDataKey} name={view.yLabel} tickFormatter={formatNumber} tick={{ fill: '#6b7280' }} tickCount={12} domain={[0, dataMax => Math.ceil(dataMax * 1.4)]} label={<CustomYAxisLabel />} />

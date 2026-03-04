@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>กระดานข้อมูลวิเคราะห์ความเหลื่อมล้ำปัญหาไฟป่า</title>
+    
+    <!-- นำเข้า Tailwind CSS เพื่อจัดการความสวยงาม -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- นำเข้าฟอนต์ภาษาไทย (Sarabun) ให้อ่านง่าย -->
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- นำเข้า React และ Recharts สำหรับวาดกราฟ -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- เพิ่ม PropTypes ซึ่งไลบรารีต้องการใช้งาน -->
+    <script crossorigin src="https://unpkg.com/prop-types/prop-types.min.js"></script>
+    <!-- ระบุเวอร์ชันที่เสถียรของ Recharts (2.10.3) เพื่อหลีกเลี่ยงบั๊กจากเวอร์ชันล่าสุด -->
+    <script crossorigin src="https://unpkg.com/recharts@2.10.3/umd/Recharts.js"></script>
+    <!-- นำเข้า Babel เพื่ออ่านโค้ด JSX ใน HTML -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f8fafc; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState } = React;
+        const { ComposedChart, Scatter, Area, Line, XAxis, YAxis, ZAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell, LabelList } = window.Recharts;
+
+        // --- ไอคอนแบบฝัง (Inline SVG Icons) ---
+        const FlameIcon = ({ size, strokeWidth }) => (
+          <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>
+        );
+        const ActivityIcon = ({ size, strokeWidth }) => (
+          <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        );
+        const LandmarkIcon = ({ size, strokeWidth }) => (
+          <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><line x1="3" x2="21" y1="22" y2="22"/><line x1="6" x2="6" y1="18" y2="11"/><line x1="10" x2="10" y1="18" y2="11"/><line x1="14" x2="14" y1="18" y2="11"/><line x1="18" x2="18" y1="18" y2="11"/><polygon points="12 2 20 7 4 7"/></svg>
+        );
+        const MapIconSvg = ({ size, strokeWidth }) => (
+          <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" x2="9" y1="3" y2="18"/><line x1="15" x2="15" y1="6" y2="21"/></svg>
+        );
+
+        // --- ชุดข้อมูลจังหวัด ---
+        const data = [
+          { province: "กาญจนบุรี", forest: 10773042, hotspots: 7244, totalHotspots: 21731, budgetRai: 0.02, burntRai: 370151, budgetMB: 0.26, hotspots100k: 67.2 },
+          { province: "ขอนแก่น", forest: 2187802, hotspots: 640, totalHotspots: 1919, budgetRai: 10.4, burntRai: 49565, budgetMB: 22.75, hotspots100k: 29.3 },
+          { province: "เชียงราย", forest: 5836759, hotspots: 4648, totalHotspots: 13943, budgetRai: 14.49, burntRai: 142015, budgetMB: 84.56, hotspots100k: 79.6 },
+          { province: "เชียงใหม่", forest: 17260165, hotspots: 10225, totalHotspots: 30674, budgetRai: 8.16, burntRai: 905401, budgetMB: 140.89, hotspots100k: 59.2 },
+          { province: "ตาก", forest: 12944047, hotspots: 8408, totalHotspots: 25225, budgetRai: 3.18, burntRai: 1246300, budgetMB: 41.23, hotspots100k: 65.0 },
+          { province: "นครสวรรค์", forest: 1708184, hotspots: 748, totalHotspots: 2244, budgetRai: 10.09, burntRai: 68753, budgetMB: 17.24, hotspots100k: 43.8 },
+          { province: "น่าน", forest: 9003366, hotspots: 6707, totalHotspots: 20120, budgetRai: 0.22, burntRai: 473085, budgetMB: 2.02, hotspots100k: 74.5 },
+          { province: "พะเยา", forest: 3977727, hotspots: 3060, totalHotspots: 9179, budgetRai: 0.24, burntRai: 213038, budgetMB: 0.95, hotspots100k: 76.9 },
+          { province: "พิษณุโลก", forest: 5046001, hotspots: 1600, totalHotspots: 4799, budgetRai: 10.58, burntRai: 77944, budgetMB: 53.41, hotspots100k: 31.7 },
+          { province: "เพชรบูรณ์", forest: 5562415, hotspots: 2436, totalHotspots: 7308, budgetRai: 0.12, burntRai: 195208, budgetMB: 0.65, hotspots100k: 43.8 },
+          { province: "แพร่", forest: 3907059, hotspots: 3723, totalHotspots: 11168, budgetRai: 32.51, burntRai: 397795, budgetMB: 127.00, hotspots100k: 95.3 },
+          { province: "แม่ฮ่องสอน", forest: 10901761, hotspots: 11118, totalHotspots: 33353, budgetRai: 6.33, burntRai: 1423573, budgetMB: 69.00, hotspots100k: 102.0 },
+          { province: "ราชบุรี", forest: 1684251, hotspots: 391, totalHotspots: 1174, budgetRai: 15.24, burntRai: 26954, budgetMB: 25.67, hotspots100k: 23.2 },
+          { province: "ลพบุรี", forest: 1255109, hotspots: 517, totalHotspots: 1551, budgetRai: 0.03, burntRai: 155368, budgetMB: 0.03, hotspots100k: 41.2 },
+          { province: "ลำปาง", forest: 7792354, hotspots: 7022, totalHotspots: 21065, budgetRai: 7.94, burntRai: 899890, budgetMB: 61.86, hotspots100k: 90.1 },
+          { province: "ลำพูน", forest: 2645407, hotspots: 2221, totalHotspots: 6664, budgetRai: 0.24, burntRai: 290958, budgetMB: 0.65, hotspots100k: 84.0 },
+          { province: "เลย", forest: 5392195, hotspots: 2850, totalHotspots: 8550, budgetRai: 0.1, burntRai: 78991, budgetMB: 0.55, hotspots100k: 52.8 },
+          { province: "สุโขทัย", forest: 2180758, hotspots: 1134, totalHotspots: 3403, budgetRai: 0.17, burntRai: 91206, budgetMB: 0.38, hotspots100k: 52.0 },
+          { province: "อุดรธานี", forest: 3193315, hotspots: 661, totalHotspots: 1984, budgetRai: 7.96, burntRai: 23749, budgetMB: 25.41, hotspots100k: 20.7 },
+          { province: "อุตรดิตถ์", forest: 5270612, hotspots: 3690, totalHotspots: 11069, budgetRai: 0.17, burntRai: 350258, budgetMB: 0.90, hotspots100k: 70.0 }
+        ];
+
+        // --- ฟังก์ชันคำนวณสถิติ ---
+        const calculateCI = (dataArray, xKey, yKey) => {
+          const n = dataArray.length;
+          let sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
+          dataArray.forEach(d => {
+            sumX += d[xKey];
+            sumY += d[yKey];
+            sumXY += d[xKey] * d[yKey];
+            sumXX += d[xKey] * d[xKey];
+          });
+          
+          const meanX = sumX / n;
+          const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+          const intercept = (sumY - slope * sumX) / n;
+
+          let ssr = 0;
+          dataArray.forEach(d => {
+            const yPred = slope * d[xKey] + intercept;
+            ssr += Math.pow(d[yKey] - yPred, 2);
+          });
+          const se = Math.sqrt(ssr / (n - 2));
+          const tValue = 2.101; 
+          const ssXX_diff = sumXX - (sumX * sumX) / n;
+
+          const minX = 0;
+          const maxX = 20000000;
+          const steps = 50;
+          const stepSize = (maxX - minX) / steps;
+          
+          const ciData = [];
+          for (let i = 0; i <= steps; i++) {
+            const x = minX + i * stepSize;
+            const yPred = slope * x + intercept;
+            const marginOfError = tValue * se * Math.sqrt((1 / n) + Math.pow(x - meanX, 2) / ssXX_diff);
+            ciData.push({
+              forest: x,
+              trend: yPred,
+              ciRange: [yPred - marginOfError, yPred + marginOfError] 
+            });
+          }
+          return ciData;
+        };
+
+        const VIEWS = [
+          {
+            id: 0, title: "1. ป่า vs ไฟ (เฉลี่ยปี)", subtitle: "(ขนาด = งบ/ไร่)",
+            icon: FlameIcon, yDataKey: "hotspots", yLabel: "จุดความร้อนเฉลี่ย (จุด/ปี)",
+            zDataKey: "budgetRai", zLabel: "งบประมาณ (บาท/ไร่)", color: "#ef4444", activeColor: "#b91c1c",
+            zRange: [50, 4000], legendSizes: [{ v: 0.1, label: '0.1 บาท' }, { v: 10, label: '10 บาท' }, { v: 30, label: '30+ บาท' }]
+          },
+          {
+            id: 1, title: "2. ป่า vs ไฟ/พื้นที่", subtitle: "(ขนาด = งบ/ไร่)",
+            icon: ActivityIcon, yDataKey: "hotspots100k", yLabel: "ความหนาแน่นไฟ (จุด/แสนไร่)",
+            zDataKey: "budgetRai", zLabel: "งบประมาณ (บาท/ไร่)", color: "#8b5cf6", activeColor: "#6d28d9",
+            zRange: [50, 4000], legendSizes: [{ v: 0.1, label: '0.1 บาท' }, { v: 10, label: '10 บาท' }, { v: 30, label: '30+ บาท' }]
+          },
+          {
+            id: 2, title: "3. ป่า vs งบประมาณ", subtitle: "(ขนาด = ไฟ/แสนไร่)",
+            icon: LandmarkIcon, yDataKey: "budgetMB", yLabel: "งบประมาณเฉลี่ย (ล้านบาท/ปี)",
+            zDataKey: "hotspots100k", zLabel: "ความหนาแน่นไฟ (จุด/แสนไร่)", color: "#3b82f6", activeColor: "#1d4ed8",
+            zRange: [100, 3000], legendSizes: [{ v: 20, label: '20 จุด' }, { v: 60, label: '60 จุด' }, { v: 100, label: '100+ จุด' }]
+          },
+          {
+            id: 3, title: "4. ป่า vs พื้นที่เผาไหม้", subtitle: "(ขนาด = งบ/ไร่)",
+            icon: MapIconSvg, yDataKey: "burntRai", yLabel: "พื้นที่เผาไหม้เฉลี่ย (ไร่/ปี)",
+            zDataKey: "budgetRai", zLabel: "งบประมาณ (บาท/ไร่)", color: "#f97316", activeColor: "#c2410c",
+            zRange: [50, 4000], legendSizes: [{ v: 0.1, label: '0.1 บาท' }, { v: 10, label: '10 บาท' }, { v: 30, label: '30+ บาท' }]
+          }
+        ];
+
+        function App() {
+          const [activeTab, setActiveTab] = useState(0);
+          const [hoveredNode, setHoveredNode] = useState(null);
+
+          const view = VIEWS[activeTab];
+
+          const formatNumber = (num) => {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + ' ล้าน';
+            if (num >= 10000) return (num / 10000).toFixed(1) + ' หมื่น';
+            if (num >= 1000) return (num / 1000).toFixed(1) + ' พัน';
+            return num.toLocaleString();
+          };
+
+          const ciData = calculateCI(data, 'forest', view.yDataKey);
+
+          const CustomTooltip = ({ active, payload }) => {
+            if (active && payload && payload.length && payload[0].payload.province) {
+              const pointData = payload[0].payload;
+              return (
+                <div className="bg-white p-4 border border-gray-200 shadow-xl rounded-lg max-w-sm z-50">
+                  <h3 className="text-xl font-bold text-gray-800 mb-2 border-b pb-1">{pointData.province}</h3>
+                  <div className="space-y-2 text-sm text-gray-700">
+                    <p className="flex justify-between"><span className="font-semibold">🌲 พื้นที่ป่ารวม:</span> <span>{pointData.forest.toLocaleString()} ไร่</span></p>
+                    <p className={`flex justify-between ${activeTab === 0 ? 'text-red-600 font-bold bg-red-50 p-1 rounded' : ''}`}><span className="font-semibold">🔥 ไฟเฉลี่ย/ปี:</span> <span>{pointData.hotspots.toLocaleString()} จุด/ปี</span></p>
+                    <p className={`flex justify-between ${activeTab === 1 ? 'text-purple-600 font-bold bg-purple-50 p-1 rounded' : ''}`}><span className="font-semibold">📊 ความหนาแน่นไฟ:</span> <span>{pointData.hotspots100k.toFixed(1)} จุด/แสนไร่</span></p>
+                    <p className={`flex justify-between ${activeTab === 3 ? 'text-orange-600 font-bold bg-orange-50 p-1 rounded' : ''}`}><span className="font-semibold">🌋 พื้นที่ถูกเผา:</span> <span>{pointData.burntRai.toLocaleString()} ไร่/ปี</span></p>
+                    <p className={`flex justify-between ${activeTab === 2 ? 'text-blue-600 font-bold bg-blue-50 p-1 rounded' : ''}`}><span className="font-semibold">💰 งบประมาณรวม:</span> <span>{pointData.budgetMB.toLocaleString()} ล้านบาท/ปี</span></p>
+                    <div className="mt-3 pt-2 border-t border-gray-200 bg-gray-50 p-2 rounded">
+                      <p className={`flex justify-between ${(activeTab === 0 || activeTab === 1 || activeTab === 3) ? 'text-green-700 font-bold' : ''}`}><span>งบต่อไร่:</span><span>{pointData.budgetRai} บ./ไร่</span></p>
+                      <p className={`flex justify-between ${activeTab === 2 ? 'text-red-700 font-bold' : 'text-gray-500 text-xs'}`}><span>ความหนาแน่นไฟ:</span><span>{pointData.hotspots100k.toFixed(1)} จุด/แสนไร่</span></p>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+            return null;
+          };
+
+          const renderLegend = () => {
+            return (
+              <div className="flex flex-col items-center mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200 w-max mx-auto shadow-sm">
+                <span className="text-sm font-bold text-gray-700 mb-3">{view.subtitle}</span>
+                <div className="flex items-end justify-center space-x-8">
+                  {view.legendSizes.map((item, idx) => {
+                    const sizeMap = [10, 30, 60];
+                    return (
+                      <div key={idx} className="flex flex-col items-center">
+                        <div className="rounded-full flex items-center justify-center opacity-70 border-2" style={{ width: sizeMap[idx], height: sizeMap[idx], backgroundColor: view.color, borderColor: view.activeColor }}></div>
+                        <span className="text-xs mt-2 text-gray-600 font-medium">{item.label}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          };
+
+          const renderCustomLabel = (props) => {
+            const { x, y, index } = props;
+            const entry = data[index];
+            const provincesToShow = ['เชียงใหม่', 'แม่ฮ่องสอน', 'กาญจนบุรี', 'แพร่', 'ตาก', 'น่าน', 'ลพบุรี', 'ลำพูน', 'ลำปาง', 'เชียงราย', 'ขอนแก่น', 'อุตรดิตถ์', 'ราชบุรี'];
+            
+            if (!provincesToShow.includes(entry.province)) return null;
+
+            let dx = 0, dy = 0, textAnchor = "middle";
+            switch(entry.province) {
+              case 'เชียงใหม่': dx = -25; dy = 5; textAnchor = 'end'; break;
+              case 'ตาก': dx = 25; dy = 5; textAnchor = 'start'; break;
+              case 'แม่ฮ่องสอน': dx = 0; dy = -35; textAnchor = 'middle'; break;
+              case 'กาญจนบุรี': dx = 0; dy = 45; textAnchor = 'middle'; break;
+              case 'แพร่': dx = -25; dy = 5; textAnchor = 'end'; break;
+              case 'น่าน': dx = -20; dy = -25; textAnchor = 'end'; break;
+              case 'ลำปาง': dx = 25; dy = 15; textAnchor = 'start'; break;
+              case 'เชียงราย': dx = 25; dy = -15; textAnchor = 'start'; break;
+              case 'ลพบุรี': dx = -20; dy = -10; textAnchor = 'end'; break;
+              case 'ลำพูน': dx = 20; dy = 30; textAnchor = 'start'; break;
+              case 'ขอนแก่น': dx = 20; dy = -10; textAnchor = 'start'; break;
+              case 'อุตรดิตถ์': dx = -20; dy = 35; textAnchor = 'end'; break;
+              case 'ราชบุรี': dx = -20; dy = 10; textAnchor = 'end'; break;
+              default: break;
+            }
+
+            let subLabel1 = "", subLabel2 = "";
+            if (activeTab === 0) { subLabel1 = `งบ: ${entry.budgetRai} บ./ไร่`; }
+            else if (activeTab === 1) { subLabel1 = `ไฟ: ${entry.hotspots100k.toFixed(1)} จุด/แสนไร่`; subLabel2 = `งบ: ${entry.budgetRai} บ./ไร่`; }
+            else if (activeTab === 2) { subLabel1 = `ไฟ: ${entry.hotspots100k.toFixed(1)} จุด/แสนไร่`; subLabel2 = `งบ: ${entry.budgetRai} บ./ไร่`; }
+            else if (activeTab === 3) { subLabel1 = `เผา: ${((entry.burntRai / entry.forest) * 100).toFixed(1)}%`; subLabel2 = `งบ: ${entry.budgetRai} บ./ไร่`; }
+
+            const isCrisis = ['กาญจนบุรี', 'น่าน', 'ตาก', 'ลพบุรี', 'ลำพูน'].includes(entry.province);
+            const isOverFunded = ['แพร่'].includes(entry.province);
+            const mainColor = isCrisis ? "#b91c1c" : (isOverFunded ? "#047857" : "#1f2937");
+            const textShadowStyle = { textShadow: '1px 1px 2px white, -1px -1px 2px white, 1px -1px 2px white, -1px 1px 2px white, 0px 0px 4px white' };
+
+            return (
+              <text x={x} y={y} textAnchor={textAnchor} className="pointer-events-none transition-all duration-500" style={textShadowStyle}>
+                <tspan x={x + dx} dy={dy} fill={mainColor} fontSize={14} fontWeight="900">{entry.province}</tspan>
+                <tspan x={x + dx} dy={16} fill="#4b5563" fontSize={11} fontWeight="800">{subLabel1}</tspan>
+                {subLabel2 && <tspan x={x + dx} dy={14} fill="#4b5563" fontSize={11} fontWeight="800">{subLabel2}</tspan>}
+              </text>
+            );
+          };
+
+          const CustomYAxisLabel = ({ viewBox }) => {
+            const text = view.yLabel;
+            const splitIndex = text.indexOf('(');
+            const xPos = viewBox.x + 20; 
+            const yPos = viewBox.y - 45; 
+
+            if (splitIndex !== -1) {
+              const line1 = text.substring(0, splitIndex).trim();
+              const line2 = text.substring(splitIndex).trim();
+              return (
+                <text textAnchor="middle" fontWeight="bold" fill="#374151" fontSize={13}>
+                  <tspan x={xPos} y={yPos}>{line1}</tspan>
+                  <tspan x={xPos} y={yPos + 18} fontSize={11} fill="#6b7280">{line2}</tspan>
+                </text>
+              );
+            }
+            return <text x={xPos} y={yPos + 10} textAnchor="middle" fontWeight="bold" fill="#374151" fontSize={13}>{text}</text>;
+          };
+
+          return (
+            <div className="flex flex-col w-full h-screen p-4 md:p-6 bg-slate-50 overflow-hidden">
+              <div className="mb-4 text-center md:text-left">
+                <h1 className="text-2xl md:text-3xl font-extrabold text-gray-800">กระดานข้อมูลวิเคราะห์ความเหลื่อมล้ำปัญหาไฟป่า</h1>
+                <p className="text-gray-600 mt-1">เปรียบเทียบความต้องการจริง กับ งบประมาณที่ได้รับ (เหนือเส้นประ = เสี่ยงกว่าค่าเฉลี่ยปกติ)</p>
+              </div>
+
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-4 border-b border-gray-200 pb-2">
+                {VIEWS.map((tab, idx) => {
+                  const Icon = tab.icon;
+                  const isActive = activeTab === idx;
+                  return (
+                    <button key={idx} onClick={() => setActiveTab(idx)} className={`flex flex-col items-center justify-center p-3 rounded-t-lg transition-all duration-200 border-b-4 ${isActive ? 'bg-white shadow-sm' : 'bg-gray-100 border-transparent hover:bg-gray-200 text-gray-500'}`} style={{ borderBottomColor: isActive ? tab.activeColor : 'transparent', color: isActive ? tab.activeColor : undefined }}>
+                      <div className="flex items-center gap-2 mb-1">
+                        <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
+                        <span className={`font-bold ${isActive ? 'text-[15px]' : 'text-sm'}`}>{tab.title}</span>
+                      </div>
+                      <span className={`text-[10px] md:text-xs ${isActive ? 'text-gray-600 font-medium' : 'text-gray-400'}`}>{tab.subtitle}</span>
+                    </button>
+                  )
+                })}
+              </div>
+
+              <div className="flex-grow w-full h-full min-h-[600px] bg-white rounded-xl shadow-sm border border-gray-200 p-4 relative">
+                <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart margin={{ top: 90, right: 100, bottom: 40, left: 50 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis type="number" dataKey="forest" name="พื้นที่ป่า" tickFormatter={formatNumber} domain={[0, 20000000]} tick={{ fill: '#6b7280' }} label={{ value: 'พื้นที่ป่ารวม (ไร่)', position: 'insideBottomRight', offset: -25, fontWeight: 'bold', fill: '#374151' }} />
+                    <YAxis type="number" dataKey={view.yDataKey} name={view.yLabel} tickFormatter={formatNumber} tick={{ fill: '#6b7280' }} tickCount={12} domain={[0, dataMax => Math.ceil(dataMax * 1.4)]} label={<CustomYAxisLabel />} />
+                    <ZAxis type="number" dataKey={view.zDataKey} range={view.zRange} name={view.zLabel} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ strokeDasharray: '3 3', stroke: '#9ca3af' }} isAnimationActive={false} />
+                    <Legend content={renderLegend} verticalAlign="bottom" wrapperStyle={{ paddingTop: '20px' }} />
+                    <Area data={ciData} type="monotone" dataKey="ciRange" fill={view.color} fillOpacity={0.15} stroke="none" isAnimationActive={true} animationDuration={800} />
+                    <Line data={ciData} type="monotone" dataKey="trend" stroke="#4b5563" strokeDasharray="5 5" strokeWidth={2} dot={false} activeDot={false} isAnimationActive={true} animationDuration={800} />
+                    <Scatter name="ข้อมูลจังหวัด" data={data} fill={view.color} stroke={view.activeColor} strokeWidth={1} onMouseEnter={(e, index) => setHoveredNode(index)} onMouseLeave={() => setHoveredNode(null)} animationDuration={800}>
+                      {data.map((entry, index) => <Cell key={`cell-${index}`} fill={hoveredNode === index ? view.activeColor : view.color} fillOpacity={hoveredNode === index ? 0.9 : 0.6} strokeWidth={hoveredNode === index ? 2 : 1} />)}
+                      <LabelList dataKey="province" content={renderCustomLabel} />
+                    </Scatter>
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
